@@ -1,0 +1,87 @@
+﻿<UserControl x:Class="RestaurantManagementSystem.Views.ucAdmin"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:RestaurantManagementSystem.Views"
+             Background="#F5F6FA" Loaded="UserControl_Loaded">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#2C3E50" CornerRadius="0,15,15,0">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3"/>
+            </Border.Effect>
+            <StackPanel Margin="0,30,0,0">
+                <Border Width="80" Height="80" Background="#34495E" CornerRadius="40" Margin="0,0,0,10">
+                    <TextBlock Text="🧑‍💼" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+                <TextBlock Text="ADMIN PANEL" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+
+                <Button x:Name="btnMenuFood" Content="🍔 Quản Lý Món Ăn" Click="btnMenu_Click" Style="{DynamicResource MenuButtonStyle}"/>
+                <Button x:Name="btnMenuCategory" Content="📂 Quản Lý Danh Mục" Click="btnMenu_Click" Style="{DynamicResource MenuButtonStyle}"/>
+                <Button x:Name="btnMenuAccount" Content="👥 Quản Lý Tài Khoản" Click="btnMenu_Click" Style="{DynamicResource MenuButtonStyle}"/>
+                <Button x:Name="btnMenuReport" Content="📊 Thống Kê Doanh Thu" Click="btnMenu_Click" Style="{DynamicResource MenuButtonStyle}"/>
+                <Button x:Name="btnMenuAudit" Content="🕵️ Hệ Thống Giám Sát" Click="btnMenu_Click" Style="{DynamicResource MenuButtonStyle}"/>
+            </StackPanel>
+        </Border>
+
+        <TabControl x:Name="tabMain" Grid.Column="1" Background="Transparent" BorderThickness="0" Margin="20">
+            <TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                </Style>
+            </TabControl.ItemContainerStyle>
+
+            <TabItem>
+                <local:ucFood/>
+            </TabItem>
+
+            <TabItem>
+                <local:ucCategory/>
+            </TabItem>
+
+            <TabItem>
+                <local:ucAccount/>
+            </TabItem>
+
+            <TabItem>
+                <local:ucReport/>
+            </TabItem>
+
+            <TabItem>
+                <local:ucMonitor/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+
+    <UserControl.Resources>
+        <Style x:Key="MenuButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="20,0,0,0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#34495E"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+</UserControl>
