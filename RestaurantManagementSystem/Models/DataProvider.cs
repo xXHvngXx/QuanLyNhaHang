@@ -5,7 +5,7 @@ namespace RestaurantManagementSystem.Models
 {
     public class DataProvider
     {
-        private string connectionSTR = @"Data Source=ADMIN-PC\SQLEXPRESS;Initial Catalog=QL_NhaHang;Integrated Security=True;TrustServerCertificate=True"; //Địa chỉ này tuỳ máy nha
+        private string connectionSTR = @"Data Source=.;Initial Catalog=QL_NhaHang;Integrated Security=True;TrustServerCertificate=True";
 
         private static DataProvider? instance;
         public static DataProvider Instance

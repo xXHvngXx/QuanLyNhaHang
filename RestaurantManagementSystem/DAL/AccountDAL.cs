@@ -1,11 +1,11 @@
-﻿using System;
+﻿using RestaurantManagementSystem.Models;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using RestaurantManagementSystem.Models;
-using System.Data;
 
 namespace RestaurantManagementSystem.DAL
 {
@@ -23,11 +23,15 @@ namespace RestaurantManagementSystem.DAL
         // Lấy danh sách, kèm theo cột RoleName dịch ra tiếng Việt
         public DataTable GetListAccount()
         {
+            // 0: Admin, 2: Cashier, 1: Staff
             string query = "SELECT UserName, DisplayName, Role, " +
-                           "CASE WHEN Role = 1 THEN N'Quản trị viên (Admin)' " +
-                           "WHEN Role = 2 THEN N'Quản lý' " +
-                           "ELSE N'Nhân viên' END AS RoleName " +
+                           "CASE " +
+                           "WHEN Role = 0 THEN N'Quản trị viên (Admin)' " +
+                           "WHEN Role = 2 THEN N'Thu ngân (Cashier)' " +
+                           "ELSE N'Phục vụ (Staff)' " +
+                           "END AS RoleName " +
                            "FROM Account";
+
             return DataProvider.Instance.ExecuteQuery(query);
         }
 
