@@ -123,27 +123,36 @@ namespace RestaurantManagementSystem.Views
         {
             try
             {
-                string from = dtpFrom.SelectedDate?.ToString("yyyy-MM-dd") ?? "2026-03-25";
-                string to = dtpTo.SelectedDate?.ToString("yyyy-MM-dd") ?? "2026-04-03";
+                // 1. ĐỊNH NGHĨA BIẾN 
+                string from = dtpFrom.SelectedDate?.ToString("yyyy-MM-dd") ?? DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd");
+                string to = dtpTo.SelectedDate?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd");
 
                 // Lấy đường dẫn tuyệt đối của thư mục chứa file .exe đang chạy 
                 string appFolder = AppDomain.CurrentDomain.BaseDirectory;
                 string scriptPath = System.IO.Path.Combine(appFolder, "export_report.py");
 
-                // Kiểm tra xem Visual Studio đã copy file sang đúng chỗ chưa
+                // 2. KIỂM TRA FILE TỒN TẠI
                 if (!System.IO.File.Exists(scriptPath))
                 {
-                    MessageBox.Show("Chưa thấy file Python tại: " + scriptPath + "\nCậu nhớ chọn 'Copy always' nhé!", "Lỗi đường dẫn");
+                    MessageBox.Show("Chưa thấy file Python tại: " + scriptPath, "Lỗi đường dẫn");
                     return;
                 }
 
+                // 3. CẤU HÌNH GỌI PYTHON
                 ProcessStartInfo start = new ProcessStartInfo();
                 start.FileName = "python";
-                start.Arguments = $"\"{scriptPath}\" {from} {to}";
+
+                // Truyền tham số: script, từ ngày, đến ngày và dấu "." cho server portable
+                start.Arguments = $"\"{scriptPath}\" {from} {to} .";
+
                 start.UseShellExecute = false;
                 start.RedirectStandardOutput = true;
                 start.RedirectStandardError = true;
                 start.CreateNoWindow = true;
+
+                // ĐẢM BẢO HIỂN THỊ TIẾNG VIỆT KHÔNG LỖI (UTF-8)
+                start.StandardOutputEncoding = System.Text.Encoding.UTF8;
+                start.StandardErrorEncoding = System.Text.Encoding.UTF8;
 
                 using (Process process = Process.Start(start))
                 {
@@ -155,11 +164,14 @@ namespace RestaurantManagementSystem.Views
                     {
                         string filePath = output.Replace("Success: ", "").Trim();
                         MessageBox.Show("Xuất báo cáo thành công rồi sếp ơi!", "Thành công");
+
+                        // Mở file Excel vừa tạo
                         Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
                     }
                     else
                     {
-                        MessageBox.Show("Lỗi từ Python: \n" + (string.IsNullOrEmpty(error) ? output : error));
+                        // Lúc này các thông báo lỗi hoặc "Không có dữ liệu" sẽ hiện tiếng Việt chuẩn
+                        MessageBox.Show("Thông báo hệ thống: \n" + (string.IsNullOrEmpty(error) ? output : error));
                     }
                 }
             }
