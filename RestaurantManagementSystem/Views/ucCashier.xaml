@@ -3,38 +3,48 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             mc:Ignorable="d" 
-             Background="Transparent"
-             Loaded="UserControl_Loaded">
-    <Grid Margin="10">
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             mc:Ignorable="d" Background="Transparent">
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </UserControl.Resources>
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadDataCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Grid Margin="15">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2.5*"/>
-            <ColumnDefinition Width="4.5*"/>
-            <ColumnDefinition Width="3.2*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Background="#2F3640" CornerRadius="15" Padding="10" Margin="5">
+        <Border Background="#2F3640" CornerRadius="15" Padding="12" Margin="5">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <TextBlock Grid.Row="0" Text="🍽 DANH SÁCH BÀN" Foreground="White" FontSize="14" FontWeight="Bold" Margin="5,0,0,10"/>
-                <ListBox Grid.Row="1" x:Name="lvTable" SelectionChanged="lvTable_SelectionChanged" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Center">
+                <StackPanel Grid.Row="0" Margin="5,0,0,10">
+                    <TextBlock Text="🍽 DANH SÁCH BÀN" Foreground="White" FontSize="16" FontWeight="Bold"/>
+                    <Rectangle Height="1" Fill="#57606F" Margin="0,5,0,0"/>
+                </StackPanel>
+
+                <ListBox Grid.Row="1" ItemsSource="{Binding Tables}" SelectedItem="{Binding SelectedTable}"
+                         Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel HorizontalAlignment="Center"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Grid x:Name="ItemGrid" Margin="0,5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="160"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock x:Name="ArrowLeft" Grid.Column="0" Text="&gt;" Foreground="#F1C40F" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0" Opacity="0">
-                                    <TextBlock.RenderTransform>
-                                        <TranslateTransform x:Name="TransLeft" X="-10"/>
-                                    </TextBlock.RenderTransform>
-                                </TextBlock>
-                                <Border x:Name="TableBorder" Grid.Column="1" Padding="15,10" CornerRadius="10">
+                            <Grid Margin="8">
+                                <Border Width="100" Height="80" CornerRadius="12" Padding="5">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="Background" Value="#44BD32"/>
@@ -45,48 +55,14 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <TextBlock Text="{Binding TableName}" Foreground="White" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding TableName}" Foreground="White" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="{Binding StatusText}" Foreground="#F5F5F5" FontSize="10" HorizontalAlignment="Center"/>
+                                    </StackPanel>
                                 </Border>
-                                <TextBlock x:Name="ArrowRight" Grid.Column="2" Text="&lt;" Foreground="#F1C40F" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0" Opacity="0">
-                                    <TextBlock.RenderTransform>
-                                        <TranslateTransform x:Name="TransRight" X="10"/>
-                                    </TextBlock.RenderTransform>
-                                </TextBlock>
+                                <Border BorderBrush="#F1C40F" BorderThickness="3" CornerRadius="12" 
+                                        Visibility="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             </Grid>
-                            <DataTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ArrowLeft" Property="Opacity" Value="1"/>
-                                    <Setter TargetName="ArrowRight" Property="Opacity" Value="1"/>
-                                    <Trigger.EnterActions>
-                                        <BeginStoryboard x:Name="H">
-                                            <Storyboard RepeatBehavior="Forever">
-                                                <DoubleAnimation Storyboard.TargetName="TransLeft" Storyboard.TargetProperty="X" From="-10" To="0" Duration="0:0:0.4" AutoReverse="True"/>
-                                                <DoubleAnimation Storyboard.TargetName="TransRight" Storyboard.TargetProperty="X" From="10" To="0" Duration="0:0:0.4" AutoReverse="True"/>
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </Trigger.EnterActions>
-                                    <Trigger.ExitActions>
-                                        <StopStoryboard BeginStoryboardName="H"/>
-                                    </Trigger.ExitActions>
-                                </Trigger>
-                                <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-                                    <Setter TargetName="ArrowLeft" Property="Opacity" Value="1"/>
-                                    <Setter TargetName="ArrowRight" Property="Opacity" Value="1"/>
-                                    <Setter TargetName="TableBorder" Property="BorderBrush" Value="#F1C40F"/>
-                                    <Setter TargetName="TableBorder" Property="BorderThickness" Value="2"/>
-                                    <DataTrigger.EnterActions>
-                                        <BeginStoryboard x:Name="S">
-                                            <Storyboard RepeatBehavior="Forever">
-                                                <DoubleAnimation Storyboard.TargetName="TransLeft" Storyboard.TargetProperty="X" From="-10" To="0" Duration="0:0:0.4" AutoReverse="True"/>
-                                                <DoubleAnimation Storyboard.TargetName="TransRight" Storyboard.TargetProperty="X" From="10" To="0" Duration="0:0:0.4" AutoReverse="True"/>
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </DataTrigger.EnterActions>
-                                    <DataTrigger.ExitActions>
-                                        <StopStoryboard BeginStoryboardName="S"/>
-                                    </DataTrigger.ExitActions>
-                                </DataTrigger>
-                            </DataTemplate.Triggers>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -94,244 +70,84 @@
         </Border>
 
         <Border Grid.Column="1" Margin="5" Background="White" CornerRadius="15" Padding="15">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.1"/>
-            </Border.Effect>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Text="🧾 CHI TIẾT HÓA ĐƠN" FontSize="18" FontWeight="Bold" Margin="0,0,0,15" Foreground="#2D3436"/>
-                <DataGrid Grid.Row="1" x:Name="dgBill" AutoGenerateColumns="False" IsReadOnly="True" Background="White" BorderThickness="1" BorderBrush="#DFE6E9" RowHeight="35" ColumnHeaderHeight="40" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F2F6">
-                    <DataGrid.Resources>
-                        <Style TargetType="DataGridColumnHeader">
-                            <Setter Property="Background" Value="#F8F9FA"/>
-                            <Setter Property="FontWeight" Value="Bold"/>
-                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-                        </Style>
-                    </DataGrid.Resources>
+
+                <DataGrid Grid.Row="1" ItemsSource="{Binding BillDetails}" SelectedItem="{Binding SelectedBillDetail}"
+                          AutoGenerateColumns="False" IsReadOnly="True" Background="White" BorderThickness="0" SelectionMode="Single">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Tên" Binding="{Binding FoodName}" Width="1.5*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                    <Setter Property="Padding" Value="10,0"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="SL" Binding="{Binding Quantity}" Width="40">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="HorizontalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="Giá" Binding="{Binding Price, StringFormat={}{0:N0}}" Width="80"/>
-                        <DataGridTextColumn Header="Thành tiền" Binding="{Binding Total, StringFormat={}{0:N0}}" Width="90">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="Bold"/>
-                                    <Setter Property="Foreground" Value="#E84118"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
-                        <DataGridTextColumn Header="Ghi chú" Binding="{Binding Note}" Width="*">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="FontStyle" Value="Italic"/>
-                                    <Setter Property="Foreground" Value="Gray"/>
-                                    <Setter Property="VerticalAlignment" Value="Center"/>
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
-                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="Món ăn" Binding="{Binding FoodName}" Width="*"/>
+                        <DataGridTextColumn Header="SL" Binding="{Binding Quantity}" Width="40"/>
+                        <DataGridTextColumn Header="Đơn giá" Binding="{Binding Price, StringFormat={}{0:N0}}" Width="80"/>
+                        <DataGridTextColumn Header="Tổng" Binding="{Binding Total, StringFormat={}{0:N0}}" Width="80"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
         </Border>
 
-        <Border Grid.Column="2" Background="White" CornerRadius="15" Padding="15" Margin="5">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.1"/>
-            </Border.Effect>
+        <Border Grid.Column="2" Background="#F8F9FA" CornerRadius="15" Padding="15" Margin="5">
             <StackPanel>
-                <TextBlock Text="🛠 ĐIỀU CHỈNH ĐƠN" FontSize="18" FontWeight="Bold" Foreground="#2D3436" Margin="0,0,0,15"/>
-                <TextBlock Text="Danh mục:" Foreground="Gray" FontSize="12"/>
-                <ComboBox x:Name="cbCategory" Height="35" Margin="0,5" DisplayMemberPath="CategoryName" SelectedValuePath="CategoryID" SelectionChanged="cbCategory_SelectionChanged"/>
-                <TextBlock Text="Chọn món:" Foreground="Gray" FontSize="12" Margin="0,5,0,0"/>
-                <ComboBox x:Name="cbFood" Height="35" Margin="0,5" DisplayMemberPath="FoodName" SelectedValuePath="FoodID"/>
-                <TextBlock Text="Số lượng:" Foreground="Gray" FontSize="12" Margin="0,5,0,0"/>
-                <TextBox x:Name="txtQuantity" Height="35" Margin="0,5" Text="1" TextAlignment="Center" VerticalContentAlignment="Center"/>
-                <TextBlock Text="Ghi chú món (nếu có):" Foreground="Gray" FontSize="12" Margin="0,5,0,0"/>
-                <TextBox x:Name="txtNote" Height="35" Margin="0,5" VerticalContentAlignment="Center" Padding="5,0" Background="#F1F2F6" BorderThickness="0"/>
+                <TextBlock Text="🛠 ĐIỀU CHỈNH" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" 
+                          DisplayMemberPath="CategoryName" Height="35" Margin="0,5"/>
+                <ComboBox ItemsSource="{Binding Foods}" SelectedItem="{Binding SelectedFood}" 
+                          DisplayMemberPath="FoodName" Height="35" Margin="0,5"/>
 
-                <UniformGrid Columns="3" Margin="0,10,0,20">
-                    <Button Content="THÊM" Background="#00B894" Foreground="White" FontWeight="Bold" Margin="0,0,2,0" Click="btnAddFood_Click">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="8"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                    <Button Content="SỬA" Background="#6C5CE7" Foreground="White" FontWeight="Bold" Margin="2,0,2,0" Click="btnUpdateFood_Click">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="8"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                    <Button Content="XÓA" Background="#D63031" Foreground="White" FontWeight="Bold" Margin="2,0,0,0" Click="btnDeleteFood_Click">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="8"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
+                <Grid Margin="0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" Height="35" Margin="0,0,5,0" TextAlignment="Center"/>
+                    <TextBox Grid.Column="1" Text="{Binding Note}" Height="35"/>
+                </Grid>
+
+                <UniformGrid Columns="2" Rows="2" Height="85">
+                    <Button Content="THÊM MỚI" Command="{Binding AddFoodCommand}" Background="#00B894" Foreground="White" BorderThickness="0" Margin="2"/>
+                    <Button Content="CẬP NHẬT SL" Command="{Binding UpdateFoodCommand}" Background="#F1C40F" Foreground="White" BorderThickness="0" Margin="2"/>
+                    <Button Content="XÓA MÓN" Command="{Binding DeleteFoodCommand}" Background="#E17055" Foreground="White" BorderThickness="0" Margin="2"/>
+                    <Button Content="THANH TOÁN" Command="{Binding PayCommand}" Background="#00A8FF" Foreground="White" BorderThickness="0" Margin="2"/>
                 </UniformGrid>
 
-                <Separator Margin="0,0,0,15"/>
-                <TextBlock Text="💰 THANH TOÁN" FontSize="18" FontWeight="Bold" Foreground="#2D3436"/>
-                <TextBlock Text="Tổng cộng:" Foreground="Gray" Margin="0,10,0,0"/>
-                <TextBlock x:Name="txtTotal" FontSize="32" Foreground="#E84118" FontWeight="Bold" Text="0"/>
-                <TextBlock Text="Khách đưa:" Margin="0,10,0,5" Foreground="Gray"/>
-                <TextBox x:Name="txtCustomerMoney" Height="40" FontSize="20" FontWeight="Bold" VerticalContentAlignment="Center" Padding="5,0" TextChanged="txtCustomerMoney_TextChanged" Background="#F1F2F6" BorderThickness="0"/>
-                <TextBlock Text="Thối lại:" Margin="0,10,0,5" Foreground="Gray"/>
-                <TextBlock x:Name="txtChange" FontSize="24" Foreground="#44BD32" FontWeight="Bold" Text="0" Margin="0,0,0,15"/>
+                <Separator Margin="0,15"/>
+                <TextBlock Text="TỔNG TIỀN:" Foreground="Gray"/>
+                <TextBlock Text="{Binding TotalAmount, StringFormat={}{0:N0} VNĐ}" FontSize="24" FontWeight="Bold" Foreground="#E84118"/>
 
-                <Button Content="XEM BILL &amp; QUÉT QR" Height="45" Background="#9C88FF" Foreground="White" FontWeight="Bold" Margin="0,0,0,10" Click="btnShowBill_Click">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
-                <Button Content="XÁC NHẬN THANH TOÁN" Height="50" Background="#00A8FF" Foreground="White" FontWeight="Bold" Click="btnThanhToan_Click">
-                    <Button.Resources>
-                        <Style TargetType="Border">
-                            <Setter Property="CornerRadius" Value="10"/>
-                        </Style>
-                    </Button.Resources>
-                </Button>
+                <Button Content="XEM BILL &amp; IN" Click="btnShowBill_Click" Height="40" Margin="0,10" Background="#9C88FF" Foreground="White" BorderThickness="0"/>
             </StackPanel>
         </Border>
-        <Grid x:Name="receiptOverlay" Grid.ColumnSpan="3" Visibility="Collapsed" Background="#B3000000" Panel.ZIndex="1000">
-            <Border Background="White" CornerRadius="20" 
-            VerticalAlignment="Center" HorizontalAlignment="Center" 
-            Width="460" MaxHeight="750">
-                <Border.Effect>
-                    <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.6"/>
-                </Border.Effect>
 
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <Button Content="✕" 
-                    HorizontalAlignment="Right" VerticalAlignment="Top" 
-                    Width="40" Height="40" Margin="0,10,10,0"
-                    Background="Transparent" BorderThickness="0" 
-                    Foreground="#d63031" FontSize="20" FontWeight="Bold" 
-                    Cursor="Hand" Panel.ZIndex="10"
-                    Click="btnCloseReceipt_Click"/>
-
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="0">
-                        <Border Padding="35,35,50,20">
-                            <StackPanel x:Name="printTicket">
-                                <TextBlock Text="NHÀ HÀNG NHÓM 9" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#2D3436"/>
-                                <TextBlock Text="Đ/C: 123 Đường C#, Thủ Đức, TP.HCM" FontSize="13" HorizontalAlignment="Center" Margin="0,5,0,15" Foreground="Gray"/>
-                                <Separator Background="#DFE6E9" Margin="0,5"/>
-
-                                <Grid Margin="0,10">
-                                    <StackPanel HorizontalAlignment="Left">
-                                        <TextBlock x:Name="txtPrintTable" Text="Bàn: ..." FontWeight="Bold" FontSize="15"/>
-                                        <TextBlock x:Name="txtPrintDate" Text="Ngày: 01/04/2026" FontSize="12" Foreground="#636E72"/>
-                                    </StackPanel>
-                                    <StackPanel HorizontalAlignment="Right">
-                                        <TextBlock x:Name="txtPrintTime" Text="Giờ: 19:17" FontSize="12" HorizontalAlignment="Right" Foreground="#636E72"/>
-                                        <TextBlock x:Name="txtPrintStaff" Text="NV: admin" FontSize="12" HorizontalAlignment="Right" Foreground="#636E72"/>
-                                    </StackPanel>
-                                </Grid>
-
-                                <Separator Background="#DFE6E9" Margin="0,5"/>
-                                <ItemsControl x:Name="itemsPrintBill" Margin="0,15">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Margin="0,6">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{Binding FoodName}" FontSize="14" Foreground="#2D3436"/>
-                                                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,10,0">
-                                                    <TextBlock Text="{Binding Quantity}" Margin="0,0,25,0" Foreground="#2D3436" FontWeight="SemiBold"/>
-                                                    <TextBlock Text="{Binding Total, StringFormat={}{0:N0}}" FontWeight="Bold" Foreground="#2D3436"/>
-                                                </StackPanel>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-
-                                <Separator Background="Black" BorderThickness="1.5" Margin="0,5"/>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,10,15">
-                                    <TextBlock Text="TỔNG CỘNG: " FontWeight="Bold" FontSize="20" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="txtPrintTotal" Text="0" FontWeight="Bold" FontSize="26" Foreground="#E84118" VerticalAlignment="Center"/>
-                                    <TextBlock Text=" VNĐ" FontWeight="Bold" FontSize="20" Foreground="#E84118" VerticalAlignment="Center"/>
-                                </StackPanel>
-
-                                <TextBlock Text="QUÉT MÃ ĐỂ THANH TOÁN 💳" HorizontalAlignment="Center" FontSize="11" Margin="0,15,0,5" FontWeight="Bold" Foreground="#00A8FF"/>
-                                <Border BorderBrush="#F1F2F6" BorderThickness="1" CornerRadius="10" Padding="10" HorizontalAlignment="Center">
-                                    <Image Width="160" Height="160" Source="https://api.qrserver.com/v1/create-qr-code/?size=200x200&amp;data=https://www.youtube.com/watch?v=dQw4w9WgXcQ"/>
-                                </Border>
-
-                                <TextBlock Text="----------------------------------------------" HorizontalAlignment="Center" Margin="0,15,0,0" Foreground="LightGray"/>
-                                <TextBlock Text="Pass Wifi: hung_deptrai_123" FontSize="12" HorizontalAlignment="Center" FontStyle="Italic" Foreground="Gray"/>
-                                <TextBlock Text="HÂN HẠNH ĐƯỢC PHỤC VỤ QUÝ KHÁCH!" FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,8,0,15" Foreground="#2D3436"/>
-                            </StackPanel>
-                        </Border>
-                    </ScrollViewer>
-
-                    <Button Grid.Row="1" Content="XUẤT HÓA ĐƠN" Height="50" Margin="25,0,25,25" 
-                    Background="#2ECC71" Foreground="White" FontWeight="Bold" FontSize="16"
-                    Click="btnExportReceipt_Click">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="12"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                </Grid>
+        <Grid x:Name="receiptOverlay" Grid.ColumnSpan="3" Background="#B2000000" Visibility="Collapsed">
+            <Border Background="White" Width="350" VerticalAlignment="Center" CornerRadius="10" Padding="20">
+                <StackPanel>
+                    <Border x:Name="printTicket">
+                        <StackPanel>
+                            <TextBlock Text="HÓA ĐƠN NHÀ HÀNG" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <Separator Margin="0,10"/>
+                            <ItemsControl ItemsSource="{Binding BillDetails}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,2">
+                                            <TextBlock Text="{Binding FoodName}"/>
+                                            <TextBlock Text="{Binding Total, StringFormat={}{0:N0}}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Separator Margin="0,10"/>
+                            <TextBlock Text="{Binding TotalAmount, StringFormat='Tổng: {0:N0}'}" FontWeight="Bold" HorizontalAlignment="Right"/>
+                        </StackPanel>
+                    </Border>
+                    <UniformGrid Columns="2" Margin="0,15,0,0" Height="35">
+                        <Button Content="Đóng" Click="btnCloseReceipt_Click"/>
+                        <Button Content="In" Click="btnExportReceipt_Click" Background="#00A8FF" Foreground="White"/>
+                    </UniformGrid>
+                </StackPanel>
             </Border>
         </Grid>
-        <Border x:Name="brdSuccess" Background="#27ae60" CornerRadius="20" 
-        Visibility="Collapsed" Opacity="0" VerticalAlignment="Center" 
-        HorizontalAlignment="Center" Padding="30,20" Panel.ZIndex="2000" Grid.ColumnSpan="3">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.3"/>
-            </Border.Effect>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="✔" Foreground="White" FontSize="24" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                <StackPanel>
-                    <TextBlock x:Name="txtSuccessTitle" Text="THÀNH CÔNG" Foreground="White" FontWeight="Bold" FontSize="16"/>
-                    <TextBlock x:Name="txtSuccessMsg" Text="Thao tác thực hiện thành công!" Foreground="#e0e0e0" FontSize="12"/>
-                </StackPanel>
-            </StackPanel>
-        </Border>
-
-        <Border x:Name="brdError" Background="#e74c3c" CornerRadius="20" 
-        Visibility="Collapsed" Opacity="0" VerticalAlignment="Center" 
-        HorizontalAlignment="Center" Padding="30,20" Panel.ZIndex="2000" Grid.ColumnSpan="3">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.3"/>
-            </Border.Effect>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="✖" Foreground="White" FontSize="24" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                <StackPanel>
-                    <TextBlock x:Name="txtErrorTitle" Text="THÔNG BÁO LỖI" Foreground="White" FontWeight="Bold" FontSize="16"/>
-                    <TextBlock x:Name="txtErrorMsg" Text="Vui lòng kiểm tra lại thông tin!" Foreground="#f5f5f5" FontSize="12"/>
-                </StackPanel>
-            </StackPanel>
-        </Border>
     </Grid>
 </UserControl>
