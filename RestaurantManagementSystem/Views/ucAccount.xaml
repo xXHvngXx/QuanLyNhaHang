@@ -17,6 +17,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
+        <!-- BÊN TRÁI: FORM NHẬP LIỆU -->
         <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="20" Margin="0,0,15,0">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.1"/>
@@ -36,11 +37,17 @@
                          Height="35" Padding="10,8" Margin="0,0,0,15"/>
 
                 <TextBlock Text="Loại tài khoản:" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,0,5"/>
+
+                <!-- SỬA TẠI ĐÂY: Thêm đủ 3 loại và đúng thứ tự Index 0, 1, 2 -->
                 <ComboBox x:Name="cbAccountType" 
                           SelectedIndex="{Binding AccountType}"
                           Height="35" Padding="10,8" Margin="0,0,0,25">
-                    <ComboBoxItem Content="Nhân viên (Thu ngân/Phục vụ)" />
-                    <ComboBoxItem Content="Quản trị viên (Admin)" />
+                    <ComboBoxItem Content="Quản trị viên (Directeur)"/>
+                    <!-- Index 0 = Role 0 -->
+                    <ComboBoxItem Content="Nhân viên phục vụ (Serveur)"/>
+                    <!-- Index 1 = Role 1 -->
+                    <ComboBoxItem Content="Nhân viên thu ngân (Caissier)"/>
+                    <!-- Index 2 = Role 2 -->
                 </ComboBox>
 
                 <UniformGrid Columns="2" Rows="2" VerticalAlignment="Top" Margin="0,0,0,15">
@@ -54,6 +61,7 @@
             </StackPanel>
         </Border>
 
+        <!-- BÊN PHẢI: DANH SÁCH TÀI KHOẢN -->
         <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="15">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.1"/>
@@ -75,7 +83,34 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Tên Đăng Nhập" Binding="{Binding UserName}" Width="120"/>
                         <DataGridTextColumn Header="Tên Hiển Thị" Binding="{Binding DisplayName}" Width="*"/>
-                        <DataGridTextColumn Header="Quyền" Binding="{Binding Role}" Width="100"/>
+
+                        <!-- HIỂN THỊ CHỮ THAY VÌ SỐ ROLE -->
+                        <DataGridTemplateColumn Header="Quyền" Width="120">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock VerticalAlignment="Center" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Role}" Value="0">
+                                                        <Setter Property="Text" Value="Quản trị"/>
+                                                        <Setter Property="Foreground" Value="#E74C3C"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Role}" Value="1">
+                                                        <Setter Property="Text" Value="Phục vụ"/>
+                                                        <Setter Property="Foreground" Value="#2C3E50"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Role}" Value="2">
+                                                        <Setter Property="Text" Value="Thu ngân"/>
+                                                        <Setter Property="Foreground" Value="#2980B9"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
