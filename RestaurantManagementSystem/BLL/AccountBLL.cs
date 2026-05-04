@@ -31,12 +31,10 @@ namespace RestaurantManagementSystem.BLL
             if (AccountDAL.Instance.CheckAccountExist(userName))
                 return "Tên đăng nhập này đã tồn tại! Vui lòng chọn tên khác.";
 
-            // BĂM MẬT KHẨU MẶC ĐỊNH LÀ 1
-            string defaultHashedPassword = SecurityHelper.HashPassword("1");
+            string defaultHashedPassword = SecurityHelper.HashPassword(userName);
 
-            // Truyền mật khẩu đã băm xuống DAL
             if (AccountDAL.Instance.InsertAccount(userName, displayName, defaultHashedPassword, role))
-                return "Thêm tài khoản thành công! Mật khẩu mặc định là: 1";
+                return $"Thêm tài khoản thành công! Mật khẩu mặc định trùng với tên tài khoản: {userName}";
 
             return "Lỗi thêm tài khoản vào cơ sở dữ liệu!";
         }
@@ -48,6 +46,7 @@ namespace RestaurantManagementSystem.BLL
             if (string.IsNullOrWhiteSpace(displayName))
                 return "Tên hiển thị không được để trống!";
 
+            // Lưu ý: Update chỉ sửa thông tin, KHÔNG sửa mật khẩu
             if (AccountDAL.Instance.UpdateAccount(userName, displayName, role))
                 return "Cập nhật tài khoản thành công!";
 
@@ -59,8 +58,19 @@ namespace RestaurantManagementSystem.BLL
             if (string.IsNullOrWhiteSpace(userName))
                 return "Vui lòng chọn tài khoản cần xóa!";
 
-            if (userName.ToLower() == "admin")
-                return "⛔ CẢNH BÁO: Không được phép xóa tài khoản Admin tối cao!";
+            string currentUser = AccountDAL.LoginAccount["UserName"].ToString().Trim();
+            if (userName.Trim().ToLower() == currentUser.ToLower())
+                return "❌ Bạn không thể tự xóa tài khoản của chính mình!";
+
+            DataTable dt = AccountDAL.Instance.GetListAccount();
+            DataRow row = dt.AsEnumerable().FirstOrDefault(r => r.Field<string>("UserName").Trim() == userName.Trim());
+
+            if (row != null)
+            {
+                int role = Convert.ToInt32(row["Role"]);
+                if (role == 0)
+                    return "⛔ CẢNH BÁO: Không được phép xóa tài khoản thuộc nhóm Quản trị viên!";
+            }
 
             if (AccountDAL.Instance.DeleteAccount(userName))
                 return "Xóa tài khoản thành công!";
@@ -73,14 +83,49 @@ namespace RestaurantManagementSystem.BLL
             if (string.IsNullOrWhiteSpace(userName))
                 return "Vui lòng chọn tài khoản để đặt lại mật khẩu!";
 
-            // 🔒 BĂM LẠI MẬT KHẨU "1"
-            string defaultHashedPassword = SecurityHelper.HashPassword("1");
+            // Dùng chính UserName làm mật khẩu mặc định khi Reset
+            string defaultHashedPassword = SecurityHelper.HashPassword(userName);
 
-            // Truyền mật khẩu đã băm xuống DAL
             if (AccountDAL.Instance.ResetPassword(userName, defaultHashedPassword))
-                return "Thành công! Mật khẩu đã được đưa về mặc định: 1";
+                return $"Thành công! Mật khẩu của '{userName}' đã được đưa về mặc định (trùng với tên tài khoản).";
 
             return "Lỗi đặt lại mật khẩu!";
+        }
+        public string ChangePassword(string oldPass, string newPass, string reEnterPass)
+        {
+            if (AccountDAL.LoginAccount == null)
+                return "Lỗi: Không tìm thấy phiên đăng nhập!";
+
+            string userName = AccountDAL.LoginAccount["UserName"].ToString().Trim();
+
+            if (newPass != reEnterPass)
+                return "Xác nhận mật khẩu mới không khớp!";
+
+            // Lấy mật khẩu đã băm (Hash) đang lưu trong Database lên
+            string query = "SELECT Password FROM Account WHERE UserName = @u";
+            DataTable result = DataProvider.Instance.ExecuteQuery(query, new object[] { userName });
+
+            if (result == null || result.Rows.Count <= 0)
+                return "Lỗi: Tài khoản không tồn tại!";
+
+            string hashedPassInDB = result.Rows[0]["Password"].ToString().Trim();
+
+            // Sử dụng hàm Verify để kiểm tra mật khẩu cũ
+            if (!SecurityHelper.VerifyPassword(oldPass, hashedPassInDB))
+            {
+                return "Mật khẩu hiện tại không chính xác!";
+            }
+
+            // Cập nhật mật khẩu mới
+            string hashedNewPass = SecurityHelper.HashPassword(newPass).Trim();
+            if (AccountDAL.Instance.ResetPassword(userName, hashedNewPass))
+            {
+                // Cập nhật lại mật khẩu trong bộ nhớ tạm để đồng bộ
+                AccountDAL.LoginAccount["Password"] = hashedNewPass;
+                return "Đổi mật khẩu thành công!";
+            }
+
+            return "Lỗi khi cập nhật mật khẩu!";
         }
     }
 }

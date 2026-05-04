@@ -5,6 +5,23 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         WindowStartupLocation="CenterScreen">
 
+    <Window.Resources>
+        <Style x:Key="EyeButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Border Background="White" CornerRadius="30">
         <Border.Effect>
             <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.2"/>
@@ -28,7 +45,18 @@
 
                 <TextBlock Text="Mật khẩu" Foreground="#636E72" Margin="0,15,0,5" FontWeight="SemiBold"/>
                 <Border BorderBrush="#DFE6E9" BorderThickness="1" CornerRadius="10" Padding="5">
-                    <PasswordBox x:Name="txtPassword" BorderThickness="0" VerticalContentAlignment="Center" Height="30"/>
+                    <Grid>
+                        <PasswordBox x:Name="txtPassword" BorderThickness="0" VerticalContentAlignment="Center" Height="30" Padding="0,0,30,0"/>
+
+                        <TextBox x:Name="txtPasswordVisible" BorderThickness="0" VerticalContentAlignment="Center" Height="30" Padding="0,0,30,0" Visibility="Collapsed"/>
+
+                        <Button Style="{StaticResource EyeButtonStyle}" 
+                                Content="👁" 
+                                HorizontalAlignment="Right" 
+                                Width="30" Height="30"
+                                PreviewMouseDown="Eye_PreviewMouseDown" 
+                                PreviewMouseUp="Eye_PreviewMouseUp"/>
+                    </Grid>
                 </Border>
 
                 <Button x:Name="btnLogin" Content="ĐĂNG NHẬP" Margin="0,35,0,0" Height="45"

@@ -3,52 +3,254 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:RestaurantManagementSystem"
+        xmlns:gif="http://wpfanimatedgif.codeplex.com"
         mc:Ignorable="d"
         Title="Hệ Thống Quản Lý Nhà Hàng" 
-        Height="768" Width="1024" 
-        WindowState="Maximized">
+        Height="800" Width="1200" 
+        WindowState="Maximized"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F6FA">
 
-    <Grid>
+    <Window.Resources>
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#A4B0BE"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,0,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="12" Margin="10,2,10,2">
+                            <Grid>
+                                <Rectangle x:Name="indicator" HorizontalAlignment="Left" 
+                                           Width="4" Height="20" Fill="#00B894" 
+                                           RadiusX="2" RadiusY="2" Visibility="Collapsed"/>
+                                <ContentPresenter VerticalAlignment="Center" Margin="15,0,0,0"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3D4446"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="indicator" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="border" Property="Background" Value="#3D4446"/>
+                                <Setter Property="Foreground" Value="#00B894"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid CacheMode="BitmapCache">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="140"/>
+            <ColumnDefinition Width="240"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0" Background="#2D3436">
+        <!-- SIDEBAR -->
+        <Border Grid.Column="0" Background="#2D3436" CornerRadius="0,25,25,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Profile Header -->
+                <StackPanel Grid.Row="0" Margin="0,40,0,30">
+                    <Grid HorizontalAlignment="Center">
+                        <Border Width="85" Height="85" CornerRadius="50" Background="#3D4446" 
+                                BorderBrush="#1E272E" BorderThickness="1">
+                            <TextBlock x:Name="txtAvatarInitial" Text="H" Foreground="#00B894" 
+                                       FontSize="32" FontWeight="Bold" 
+                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <Ellipse Width="15" Height="15" Fill="#2ECC71" Stroke="#2D3436" StrokeThickness="2"
+                                 VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,5,5"/>
+                    </Grid>
+                    <TextBlock x:Name="txtGreeting" Text="Chào buổi tối," Foreground="#636E72" FontSize="12" 
+                               HorizontalAlignment="Center" Margin="0,15,0,2"/>
+                    <TextBlock x:Name="txtUserDisplayName" Text="QUẢN TRỊ VIÊN" Foreground="White" 
+                               FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <Border Background="#1E272E" CornerRadius="12" Padding="12,4" 
+                            HorizontalAlignment="Center" Margin="0,8,0,0">
+                        <TextBlock x:Name="txtRoleBadge" Text="👑 Administrator" Foreground="#00B894" 
+                                   FontSize="10" FontWeight="Bold"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Navigation Menu -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
+                    <StackPanel>
+                        <TextBlock Text="MAIN MENU" Foreground="#485460" FontWeight="Bold" 
+                                   Margin="25,10,0,15" FontSize="10"/>
+
+                        <Button x:Name="btnHome" Style="{StaticResource NavButtonStyle}" Click="btnHome_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🏠" FontSize="18" Margin="0,0,12,0"/>
+                                <TextBlock Text="Trang Chủ"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="btnPhucVu" Style="{StaticResource NavButtonStyle}" Click="btnPhucVu_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🍽️" FontSize="18" Margin="0,0,12,0"/>
+                                <TextBlock Text="Phục Vụ Món"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="btnThuNgan" Style="{StaticResource NavButtonStyle}" Click="btnThuNgan_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="💳" FontSize="18" Margin="0,0,12,0"/>
+                                <TextBlock Text="Thu Ngân"/>
+                            </StackPanel>
+                        </Button>
+
+                        <TextBlock Text="USER SETTINGS" Foreground="#485460" FontWeight="Bold" 
+                                   Margin="25,25,0,15" FontSize="10"/>
+                        <Button x:Name="btnDoiMatKhau" Style="{StaticResource NavButtonStyle}" Click="btnDoiMatKhau_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🔐" FontSize="18" Margin="0,0,12,0"/>
+                                <TextBlock Text="Bảo Mật"/>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="btnDangXuat" Style="{StaticResource NavButtonStyle}" Click="btnDangXuat_Click" Foreground="#FF5E57">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🏃" FontSize="18" Margin="0,0,12,0"/>
+                                <TextBlock Text="Đăng Xuất"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Admin System Control -->
+                <Border Grid.Row="2" Background="#1E272E" CornerRadius="25,25,0,0" Padding="20">
+                    <StackPanel x:Name="spAdminSection">
+                        <Button x:Name="btnAdmin" Click="btnAdmin_Click" Height="45" Background="#00B894">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                                        <TextBlock Text="SYSTEM CONTROL" HorizontalAlignment="Center" 
+                                                   VerticalAlignment="Center" FontSize="12" 
+                                                   FontWeight="Bold" Foreground="White"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- MAIN CONTENT AREA -->
+        <Grid Grid.Column="1">
             <Grid.RowDefinitions>
+                <RowDefinition Height="75"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0">
-                <TextBlock Text="NGHIỆP VỤ" Foreground="#636E72" FontWeight="Bold" Margin="15,20,0,10" FontSize="11"/>
+            <!-- TOP BAR -->
+            <Border Grid.Row="0" Background="White" Margin="20,10,20,0" CornerRadius="15"
+                    BorderBrush="#EDF0F2" BorderThickness="1">
+                <Grid Margin="20,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="txtCurrentIcon" Text="🏠" FontSize="20" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="txtCurrentTab" Text="Dashboard" FontSize="18" FontWeight="Bold" Foreground="#2D3436"/>
+                            <TextBlock x:Name="txtBreadcrumb" Text="Trang chủ / Bảng điều khiển" FontSize="11" Foreground="#A4B0BE"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Border Background="#F1F2F6" CornerRadius="10" Padding="12,6">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📅" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBlock x:Name="txtDateDisplay" Text="Hôm nay, 04/05/2026" VerticalAlignment="Center" Foreground="#2F3542" FontWeight="Medium"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
 
-                <Button x:Name="btnPhucVu" Content="👩‍🍳 Phục Vụ" Click="btnPhucVu_Click" Height="55" 
-            Background="Transparent" Foreground="White" BorderThickness="0" 
-            FontSize="14" FontWeight="Bold"/>
-
-                <Button x:Name="btnThuNgan" Content="💰 Thu Ngân" Click="btnThuNgan_Click" Height="55" 
-            Background="Transparent" Foreground="White" BorderThickness="0" 
-            FontSize="14" FontWeight="Bold"/>
-            </StackPanel>
-
-            <StackPanel x:Name="spAdminSection" Grid.Row="1" Margin="0,0,0,20">
-                <Separator Background="#636E72" Margin="15,0,15,15" Height="1" BorderThickness="0"/>
-
-                <Button x:Name="btnAdmin" Click="btnAdmin_Click" Height="50" Margin="10,0,10,0"
-            Background="#C0392B" Foreground="White" BorderThickness="0" Cursor="Hand">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="{TemplateBinding Background}" CornerRadius="8">
-                                <TextBlock Text="👑 QUẢN TRỊ" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                               FontSize="14" FontWeight="Bold" Foreground="White"/>
+            <Grid Grid.Row="1" Margin="20">
+                <Border Background="White" CornerRadius="20" BorderBrush="#EDF0F2" BorderThickness="1">
+                    <Grid>
+                        <!-- GIAO DIỆN CHÀO MỪNG -->
+                        <StackPanel x:Name="WelcomePanel" VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <Border Width="280" Height="220" Margin="0,0,0,10">
+                                <Image x:Name="imgChef" Stretch="Uniform" RenderOptions.BitmapScalingMode="LowQuality"/>
                             </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-            </StackPanel>
+                            <TextBlock Text="L'EXQUISITE CUISINE" FontSize="14" FontWeight="Bold" Foreground="#00B894" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                            <TextBlock Text="Chào mừng bạn quay trở lại" FontSize="28" FontWeight="Light" Foreground="#2D3436" HorizontalAlignment="Center"/>
+                            <Border Height="1" Width="60" Background="#DFE6E9" Margin="0,10,0,15"/>
+                            <TextBlock Text="“Nấu ăn là nghệ thuật, quản lý là một khoa học.”" FontSize="15" FontStyle="Italic" Foreground="#B2BEC3" HorizontalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Content hiển thị các chức năng -->
+                        <ContentControl x:Name="MainContent"/>
+                    </Grid>
+                </Border>
+            </Grid>
         </Grid>
-        <ContentControl x:Name="MainContent" Grid.Column="1" Margin="10"/>
+
+        <!-- ĐÂY LÀ PHẦN THÊM VÀO: CUSTOM LOGOUT DIALOG (Phủ lên Grid.ColumnSpan=2) -->
+        <Grid x:Name="ConfirmDialog" Grid.ColumnSpan="2" Visibility="Collapsed" Panel.ZIndex="1000">
+            <!-- Lớp phủ mờ nền -->
+            <Border Background="#802D3436" MouseLeftButtonDown="btnCancelLogout_Click"/>
+
+            <!-- Khung thông báo -->
+            <Border Background="White" CornerRadius="20" Width="380" Height="220" 
+                    VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.2"/>
+                </Border.Effect>
+
+                <Grid Margin="25">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,15">
+                        <TextBlock Text="⚠️" FontSize="24" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Xác nhận đăng xuất" FontSize="18" FontWeight="Bold" Foreground="#2D3436" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Row="1" Text="Bạn có chắc chắn muốn thoát khỏi hệ thống quản lý nhà hàng? Các phiên làm việc hiện tại sẽ được đóng lại." 
+                               Foreground="#636E72" FontSize="14" TextWrapping="Wrap" LineHeight="20"/>
+
+                    <UniformGrid Grid.Row="2" Columns="2" Margin="0,10,0,0">
+                        <Button Content="Hủy bỏ" Height="40" Margin="0,0,10,0" Cursor="Hand" Click="btnCancelLogout_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="#F1F2F6" CornerRadius="10">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <Button Content="Đăng xuất" Height="40" Foreground="White" Cursor="Hand" Click="btnConfirmLogout_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="#FF5E57" CornerRadius="10">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </UniformGrid>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

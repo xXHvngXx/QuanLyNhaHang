@@ -1,8 +1,9 @@
-﻿using System;
+﻿using RestaurantManagementSystem.ViewModels;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Animation;
-using RestaurantManagementSystem.ViewModels;
 
 namespace RestaurantManagementSystem.Views
 {
@@ -66,6 +67,20 @@ namespace RestaurantManagementSystem.Views
             this.Hide();
             register.ShowDialog();
             if (Application.Current != null) this.Show();
+        }
+
+        private void Eye_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            txtPasswordVisible.Text = txtPassword.Password;
+            txtPassword.Visibility = Visibility.Collapsed;
+            txtPasswordVisible.Visibility = Visibility.Visible;
+        }
+
+        private void Eye_PreviewMouseUp(object sender, MouseButtonEventArgs e)
+        {
+            txtPassword.Visibility = Visibility.Visible;
+            txtPasswordVisible.Visibility = Visibility.Collapsed;
+            txtPassword.Focus(); 
         }
     }
 }

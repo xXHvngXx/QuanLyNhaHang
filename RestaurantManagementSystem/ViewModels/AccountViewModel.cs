@@ -120,15 +120,16 @@ namespace RestaurantManagementSystem.ViewModels
 
             ResetPasswordCommand = new RelayCommand<object>(
                 (p) => {
-                    string confirmMsg = $"Đặt lại mật khẩu cho '{UserName}' về mặc định (trùng với tên tài khoản)?";
-                    if (MessageBox.Show(confirmMsg, "Khôi phục mật khẩu", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                     // Thông báo rõ ràng: mật khẩu mới sẽ trùng với UserName
+                    string confirmMsg = $"Đặt lại mật khẩu cho '{UserName}'? \n(Mật khẩu mới sẽ trùng với tên tài khoản)";
+
+                    if (MessageBox.Show(confirmMsg, "Xác nhận Reset", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        // Gọi BLL xử lý Reset (BLL sẽ lấy UserName làm pass mới)
                         string msg = AccountBLL.Instance.ResetPassword(UserName);
                         MessageBox.Show(msg, "Thông báo");
                     }
                 },
-                (p) => SelectedItem != null
+                (p) => SelectedItem != null && AccountType != 0 //Chặn thay đổi mật khẩu cho quyền quản trị viên
             );
 
             RefreshData();

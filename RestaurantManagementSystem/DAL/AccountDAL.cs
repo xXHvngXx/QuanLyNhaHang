@@ -76,5 +76,17 @@ namespace RestaurantManagementSystem.DAL
             int result = DataProvider.Instance.ExecuteNonQuery(query, new object[] { password, userName });
             return result > 0;
         }
+        public bool Login(string userName, string password)
+        {
+            string query = "SELECT * FROM Account WHERE UserName = @u AND Password = @p";
+            DataTable result = DataProvider.Instance.ExecuteQuery(query, new object[] { userName, password });
+
+            if (result.Rows.Count > 0)
+            {
+                LoginAccount = result.Rows[0];
+                return true;
+            }
+            return false;
+        }
     }
 }
