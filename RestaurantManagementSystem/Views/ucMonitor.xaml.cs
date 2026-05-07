@@ -9,7 +9,6 @@ namespace RestaurantManagementSystem.Views
         {
             InitializeComponent();
 
-            // Gán DataContext cho View để các Binding trong XAML hoạt động
             this.DataContext = new MonitorViewModel();
         }
     }

@@ -7,20 +7,17 @@ using RestaurantManagementSystem.Views;
 
 namespace RestaurantManagementSystem
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
         protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            // 1. Khởi tạo và hiển thị màn hình Loading
+            // Khởi tạo và hiển thị màn hình Loading
             LoadingWindow loadingScreen = new LoadingWindow();
             loadingScreen.Show();
 
-            // 2. Kiểm tra kết nối Database thực tế
+            // Kiểm tra kết nối Database thực tế
             bool isDatabaseReady = false;
 
             // Chạy song song: vừa delay, vừa check DB
@@ -40,7 +37,7 @@ namespace RestaurantManagementSystem
                 }
             });
 
-            // 3. Xử lý kết quả
+            // Xử lý kết quả
             if (isDatabaseReady)
             {
                 LoginWindow loginWindow = new LoginWindow();

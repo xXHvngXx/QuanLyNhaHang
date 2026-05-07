@@ -17,9 +17,6 @@ using System.Windows.Shapes;
 using RestaurantManagementSystem.ViewModels; 
 namespace RestaurantManagementSystem.Views
 {
-    /// <summary>
-    /// Interaction logic for ucWaiter.xaml
-    /// </summary>
     public partial class ucWaiter : UserControl
     {
 

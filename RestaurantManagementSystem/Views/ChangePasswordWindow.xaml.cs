@@ -1,6 +1,9 @@
-﻿using System.Windows;
+﻿using RestaurantManagementSystem.ViewModels;
+using System;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
-using RestaurantManagementSystem.ViewModels;
+using System.Windows.Media.Animation;
 
 namespace RestaurantManagementSystem.Views
 {
@@ -17,20 +20,78 @@ namespace RestaurantManagementSystem.Views
             this.Close();
         }
 
+        #region Logic Hiệu ứng Overlay & Thông báo
+
+        private void btnShowConfirm_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtNewPass.Password)) return;
+            confirmOverlay.Visibility = Visibility.Visible;
+        }
+
+        private void btnCancelConfirm_Click(object sender, RoutedEventArgs e)
+        {
+            confirmOverlay.Visibility = Visibility.Collapsed;
+        }
+
+        private async void btnFinalConfirm_Click(object sender, RoutedEventArgs e)
+        {
+            confirmOverlay.Visibility = Visibility.Collapsed;
+
+            if (this.DataContext is ChangePasswordViewModel vm)
+            {
+                if (vm.ChangePasswordCommand != null && vm.ChangePasswordCommand.CanExecute(this))
+                {
+                    this.Tag = null;
+
+                    // Chạy lệnh đổi mật khẩu
+                    vm.ChangePasswordCommand.Execute(this);
+
+                    if (this.Tag != null && this.Tag.ToString() == "SUCCESS")
+                    {
+                        await ShowSuccessAndClose();
+                    }
+                }
+            }
+        }
+
+        private async Task ShowSuccessAndClose()
+        {
+            brdNotify.Visibility = Visibility.Visible;
+            DoubleAnimation fadeIn = new DoubleAnimation(1, TimeSpan.FromMilliseconds(300));
+            brdNotify.BeginAnimation(OpacityProperty, fadeIn);
+
+            await Task.Delay(1000);
+
+            this.Hide();
+
+            await Task.Delay(200);
+            this.Close();
+        }
+
+        #endregion
+
+        #region Logic Ẩn/Hiện mật khẩu
+
         private void Eye_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
             var btn = sender as System.Windows.Controls.Button;
-            if (btn.Tag.ToString() == "Old") ShowPass(txtOldPass, txtOldPassVisible);
-            else if (btn.Tag.ToString() == "New") ShowPass(txtNewPass, txtNewPassVisible);
-            else if (btn.Tag.ToString() == "Confirm") ShowPass(txtConfirmPass, txtConfirmPassVisible);
+            if (btn?.Tag == null) return;
+
+            string tag = btn.Tag.ToString();
+            if (tag == "Old") ShowPass(txtOldPass, txtOldPassVisible);
+            else if (tag == "New") ShowPass(txtNewPass, txtNewPassVisible);
+            else if (tag == "Confirm") ShowPass(txtConfirmPass, txtConfirmPassVisible);
         }
 
         private void Eye_PreviewMouseUp(object sender, MouseButtonEventArgs e)
         {
             var btn = sender as System.Windows.Controls.Button;
-            if (btn.Tag.ToString() == "Old") HidePass(txtOldPass, txtOldPassVisible);
-            else if (btn.Tag.ToString() == "New") HidePass(txtNewPass, txtNewPassVisible);
-            else if (btn.Tag.ToString() == "Confirm") HidePass(txtConfirmPass, txtConfirmPassVisible);
+            if (btn?.Tag == null) return;
+
+            string tag = btn.Tag.ToString();
+            if (tag == "Old") HidePass(txtOldPass, txtOldPassVisible);
+            else if (tag == "New") HidePass(txtNewPass, txtNewPassVisible);
+            else if (tag == "Confirm") HidePass(txtConfirmPass, txtConfirmPassVisible);
         }
 
         private void ShowPass(System.Windows.Controls.PasswordBox p, System.Windows.Controls.TextBox t)
@@ -45,5 +106,7 @@ namespace RestaurantManagementSystem.Views
             p.Visibility = Visibility.Visible;
             t.Visibility = Visibility.Collapsed;
         }
+
+        #endregion
     }
 }

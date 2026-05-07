@@ -16,9 +16,6 @@ using System.Windows.Shapes;
 
 namespace RestaurantManagementSystem.Views
 {
-    /// <summary>
-    /// Interaction logic for ucAdmin.xaml
-    /// </summary>
     public partial class ucAdmin : UserControl
     {
         public ucAdmin()

@@ -14,9 +14,6 @@ using System.Windows.Shapes;
 
 namespace RestaurantManagementSystem.Views
 {
-    /// <summary>
-    /// Interaction logic for LoadingWindow.xaml
-    /// </summary>
     public partial class LoadingWindow : Window
     {
         public LoadingWindow()

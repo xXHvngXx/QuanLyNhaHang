@@ -1,0 +1,21 @@
+﻿<Window x:Class="RestaurantManagementSystem.Views.BillPreviewWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Xem trước hóa đơn" Height="750" Width="450" 
+        WindowStartupLocation="CenterScreen" Background="#F1F2F6">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <DocumentViewer Name="docViewer" Background="White" Margin="10"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
+            <Button Content="IN NGAY" Width="100" Height="35" Click="BtnPrint_Click" 
+                    Background="#2ECC71" Foreground="White" FontWeight="Bold" Margin="5"/>
+            <Button Content="ĐÓNG" Width="80" Height="35" Click="BtnClose_Click" 
+                    Background="#636E72" Foreground="White" Margin="5"/>
+        </StackPanel>
+    </Grid>
+</Window>

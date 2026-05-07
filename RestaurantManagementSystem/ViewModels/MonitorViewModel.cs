@@ -27,7 +27,7 @@ namespace RestaurantManagementSystem.ViewModels
         {
             RefreshCommand = new RelayCommand<object>(async p => await LoadDataAsync());
 
-            _dataTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(20) };
+            _dataTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
             _dataTimer.Tick += async (s, e) => await LoadDataAsync();
             _dataTimer.Start();
 

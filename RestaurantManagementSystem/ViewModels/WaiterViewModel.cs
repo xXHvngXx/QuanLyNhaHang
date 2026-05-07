@@ -22,6 +22,9 @@ namespace RestaurantManagementSystem.ViewModels
         private ObservableCollection<DataRowView> _billDetails;
         public ObservableCollection<DataRowView> BillDetails { get => _billDetails; set { _billDetails = value; OnPropertyChanged(); } }
 
+        private DataRowView _selectedFood;
+        public DataRowView SelectedFood { get => _selectedFood; set { _selectedFood = value; OnPropertyChanged(); } }
+
         private DataRowView _selectedTable;
         public DataRowView SelectedTable
         {
@@ -42,6 +45,7 @@ namespace RestaurantManagementSystem.ViewModels
 
         #region Commands
         public ICommand AddFoodCommand { get; set; }
+        public ICommand UpdateFoodCommand { get; set; }
         public ICommand DeleteFoodCommand { get; set; }
         public ICommand LoadDataCommand { get; set; }
         #endregion
@@ -52,7 +56,12 @@ namespace RestaurantManagementSystem.ViewModels
 
             AddFoodCommand = new RelayCommand<object>(
                 p => ExecuteAddFood(),
-                p => SelectedTable != null && SelectedCategory != null
+                p => SelectedTable != null && SelectedFood != null
+            );
+
+            UpdateFoodCommand = new RelayCommand<DataRowView>(
+                p => ExecuteUpdateFood(p),
+                p => p != null && !string.IsNullOrEmpty(Quantity)
             );
 
             DeleteFoodCommand = new RelayCommand<DataRowView>(
@@ -68,21 +77,18 @@ namespace RestaurantManagementSystem.ViewModels
         {
             try
             {
-                // 1. Lưu lại ID của bàn đang được chọn trước khi refresh
                 int? selectedTableId = null;
                 if (SelectedTable != null)
                 {
                     selectedTableId = Convert.ToInt32(SelectedTable["TableID"]);
                 }
 
-                // 2. Tải lại dữ liệu từ Database
-                DataTable dtTable = DataProvider.Instance.ExecuteQuery("SELECT * FROM TableFood");
+                DataTable dtTable = DataProvider.Instance.ExecuteQuery("EXEC USP_GetTableList");
                 Tables = ConvertDataTableToCollection(dtTable);
 
-                DataTable dtCategory = DataProvider.Instance.ExecuteQuery("SELECT * FROM Category");
+                DataTable dtCategory = DataProvider.Instance.ExecuteQuery("EXEC USP_GetCategoryList");
                 Categories = ConvertDataTableToCollection(dtCategory);
 
-                // 3. Tìm lại bàn cũ trong danh sách mới và set lại SelectedTable
                 if (selectedTableId != null)
                 {
                     foreach (var table in Tables)
@@ -105,8 +111,9 @@ namespace RestaurantManagementSystem.ViewModels
         {
             if (SelectedCategory == null) return;
             int id = Convert.ToInt32(SelectedCategory["CategoryID"]);
-            DataTable dt = DataProvider.Instance.ExecuteQuery("SELECT * FROM Food WHERE CategoryID = @id", new object[] { id });
+            DataTable dt = DataProvider.Instance.ExecuteQuery("EXEC USP_GetFoodByCategoryID @idCategory", new object[] { id });
             Foods = ConvertDataTableToCollection(dt);
+            SelectedFood = null;
         }
 
         public void LoadBill()
@@ -117,73 +124,90 @@ namespace RestaurantManagementSystem.ViewModels
                 return;
             }
             int tableID = Convert.ToInt32(SelectedTable["TableID"]);
-            string query = @"SELECT f.FoodID, f.FoodName, bi.Quantity, f.Price, (bi.Quantity * f.Price) AS Total 
-                             FROM Bill b JOIN BillInfo bi ON b.BillID = bi.BillID 
-                             JOIN Food f ON bi.FoodID = f.FoodID 
-                             WHERE b.TableID = @id AND b.Status = 0";
+            DataTable dtBill = DataProvider.Instance.ExecuteQuery("EXEC USP_GetBillByTableID @idTable", new object[] { tableID });
 
-            DataTable dt = DataProvider.Instance.ExecuteQuery(query, new object[] { tableID });
-            BillDetails = ConvertDataTableToCollection(dt);
+            if (dtBill.Rows.Count > 0)
+            {
+                int billID = Convert.ToInt32(dtBill.Rows[0]["BillID"]);
+                DataTable dt = DataProvider.Instance.ExecuteQuery("EXEC USP_GetBillDetailsByBillID @idBill", new object[] { billID });
+                BillDetails = ConvertDataTableToCollection(dt);
+            }
+            else
+            {
+                BillDetails = null;
+            }
         }
 
         void ExecuteAddFood()
         {
-            if (SelectedTable == null || SelectedCategory == null || Foods == null) return;
+            if (SelectedTable == null || SelectedFood == null) return;
 
-            var selectedFoodRow = System.Windows.Application.Current.MainWindow.FindName("cbFood") is System.Windows.Controls.ComboBox cbFood ? cbFood.SelectedValue : null;
-            if (selectedFoodRow == null && Foods.Count > 0)
-                selectedFoodRow = Foods[0]["FoodID"];
-
-            if (selectedFoodRow == null) return;
-
-            int foodID = Convert.ToInt32(selectedFoodRow);
-            int quantity = 1;
-            int.TryParse(Quantity, out quantity);
-
+            int foodID = Convert.ToInt32(SelectedFood["FoodID"]);
             int tableID = Convert.ToInt32(SelectedTable["TableID"]);
-            DataTable bill = DataProvider.Instance.ExecuteQuery("SELECT * FROM Bill WHERE TableID = @tableId AND Status = 0", new object[] { tableID });
-            int billID;
+            if (!int.TryParse(Quantity, out int quantity)) quantity = 1;
 
-            if (bill.Rows.Count == 0)
+            try
             {
-                DataProvider.Instance.ExecuteNonQuery("INSERT INTO Bill (DateCheckIn, TableID, Status, UserName) VALUES (GETDATE(), @tableId, 0, N'admin')", new object[] { tableID });
-                DataProvider.Instance.ExecuteNonQuery("UPDATE TableFood SET Status = 1 WHERE TableID = @tableId", new object[] { tableID });
+                DataProvider.Instance.ExecuteNonQuery("EXEC USP_InsertBillInfo @idTable , @idFood , @count",
+                    new object[] { tableID, foodID, quantity });
 
-                billID = Convert.ToInt32(DataProvider.Instance.ExecuteQuery("SELECT MAX(BillID) FROM Bill").Rows[0][0]);
+                LoadBill();
+                InitData();
             }
-            else
+            catch (Exception ex)
             {
-                billID = Convert.ToInt32(bill.Rows[0]["BillID"]);
+                MessageBox.Show("Lỗi khi thêm món: " + ex.Message);
             }
+        }
 
-            DataTable exist = DataProvider.Instance.ExecuteQuery("SELECT * FROM BillInfo WHERE BillID = @billId AND FoodID = @foodId", new object[] { billID, foodID });
+        void ExecuteUpdateFood(DataRowView row)
+        {
+            if (SelectedTable == null || row == null) return;
 
-            if (exist.Rows.Count > 0)
+            if (!int.TryParse(Quantity, out int newQuantity))
             {
-                DataProvider.Instance.ExecuteNonQuery("UPDATE BillInfo SET Quantity += @qty WHERE BillID = @billId AND FoodID = @foodId", new object[] { quantity, billID, foodID });
-            }
-            else
-            {
-                DataProvider.Instance.ExecuteNonQuery("INSERT INTO BillInfo (BillID, FoodID, Quantity) VALUES (@billId, @foodId, @qty)", new object[] { billID, foodID, quantity });
+                MessageBox.Show("Vui lòng nhập số lượng hợp lệ!");
+                return;
             }
 
-            LoadBill();
-            InitData();
+            try
+            {
+                int foodID = Convert.ToInt32(row["FoodID"]);
+                int tableID = Convert.ToInt32(SelectedTable["TableID"]);
+
+                DataTable dtBill = DataProvider.Instance.ExecuteQuery("EXEC USP_GetBillByTableID @idTable", new object[] { tableID });
+
+                if (dtBill.Rows.Count > 0)
+                {
+                    int billID = Convert.ToInt32(dtBill.Rows[0]["BillID"]);
+                    DataProvider.Instance.ExecuteNonQuery("EXEC USP_UpdateBillInfoQuantity @quantity , @idBill , @idFood",
+                        new object[] { newQuantity, billID, foodID });
+
+                    LoadBill();
+                    MessageBox.Show("Đã cập nhật số lượng!");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi sửa: " + ex.Message);
+            }
         }
 
         void ExecuteDeleteFood(DataRowView row)
         {
+            if (SelectedTable == null || row == null) return;
+
             if (MessageBox.Show("Bạn có chắc muốn xóa món này?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
                 int foodID = Convert.ToInt32(row["FoodID"]);
                 int tableID = Convert.ToInt32(SelectedTable["TableID"]);
 
-                DataTable dataBill = DataProvider.Instance.ExecuteQuery("SELECT BillID FROM Bill WHERE TableID = @tableID AND Status = 0", new object[] { tableID });
+                DataTable dataBill = DataProvider.Instance.ExecuteQuery("EXEC USP_GetBillByTableID @idTable", new object[] { tableID });
 
                 if (dataBill.Rows.Count > 0)
                 {
                     int billID = Convert.ToInt32(dataBill.Rows[0]["BillID"]);
-                    DataProvider.Instance.ExecuteNonQuery("DELETE FROM BillInfo WHERE BillID = @billID AND FoodID = @foodID", new object[] { billID, foodID });
+                    DataProvider.Instance.ExecuteNonQuery("EXEC USP_DeleteBillInfo @idBill , @idFood", new object[] { billID, foodID });
                 }
 
                 LoadBill();

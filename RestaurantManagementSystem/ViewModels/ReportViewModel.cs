@@ -133,7 +133,7 @@ namespace RestaurantManagementSystem.ViewModels
                     if (output.Contains("Success:"))
                     {
                         string filePath = output.Replace("Success: ", "").Trim();
-                        MessageBox.Show("Xuất báo cáo thành công sếp ơi!", "Thông báo");
+                        MessageBox.Show("Xuất báo cáo thành công!", "Thông báo");
                         Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
                     }
                     else

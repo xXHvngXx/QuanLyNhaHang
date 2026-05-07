@@ -77,7 +77,7 @@ namespace RestaurantManagementSystem.ViewModels
 
         private bool LoginLogic(string userName, string passWord)
         {
-            string query = "SELECT * FROM Account WHERE UserName = @user";
+            string query = "EXEC USP_Login @userName";
             DataTable result = DataProvider.Instance.ExecuteQuery(query, new object[] { userName });
 
             if (result.Rows.Count > 0)
@@ -86,7 +86,6 @@ namespace RestaurantManagementSystem.ViewModels
 
                 if (SecurityHelper.VerifyPassword(passWord, hashFromDB))
                 {
-                    // Lưu thông tin người dùng vào DAL để dùng cho các chức năng sau
                     AccountDAL.LoginAccount = result.Rows[0];
                     return true;
                 }

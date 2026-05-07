@@ -26,14 +26,17 @@ namespace RestaurantManagementSystem.ViewModels
                     return;
                 }
 
-                // Gọi BLL xử lý
                 string msg = AccountBLL.Instance.ChangePassword(oldPass, newPass, confirmPass);
-
-                MessageBox.Show(msg, "Thông báo");
 
                 if (msg.Contains("thành công"))
                 {
-                    p.Close();
+                    
+                    p.Tag = "SUCCESS";
+                }
+                else
+                {
+                    p.Tag = "FAILED";
+                    MessageBox.Show(msg, "Thông báo");
                 }
             });
         }

@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:gif="http://wpfanimatedgif.codeplex.com"
         mc:Ignorable="d"
         Title="Hệ Thống Quản Lý Nhà Hàng" 
         Height="800" Width="1200" 
@@ -57,7 +56,6 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- SIDEBAR -->
         <Border Grid.Column="0" Background="#2D3436" CornerRadius="0,25,25,0">
             <Grid>
                 <Grid.RowDefinitions>
@@ -66,7 +64,6 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- Profile Header -->
                 <StackPanel Grid.Row="0" Margin="0,40,0,30">
                     <Grid HorizontalAlignment="Center">
                         <Border Width="85" Height="85" CornerRadius="50" Background="#3D4446" 
@@ -78,7 +75,7 @@
                         <Ellipse Width="15" Height="15" Fill="#2ECC71" Stroke="#2D3436" StrokeThickness="2"
                                  VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="0,0,5,5"/>
                     </Grid>
-                    <TextBlock x:Name="txtGreeting" Text="Chào buổi tối," Foreground="#636E72" FontSize="12" 
+                    <TextBlock x:Name="txtGreeting" Text="Xin chào," Foreground="#636E72" FontSize="12" 
                                HorizontalAlignment="Center" Margin="0,15,0,2"/>
                     <TextBlock x:Name="txtUserDisplayName" Text="QUẢN TRỊ VIÊN" Foreground="White" 
                                FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
@@ -89,7 +86,6 @@
                     </Border>
                 </StackPanel>
 
-                <!-- Navigation Menu -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Hidden">
                     <StackPanel>
                         <TextBlock Text="MAIN MENU" Foreground="#485460" FontWeight="Bold" 
@@ -110,7 +106,7 @@
                         </Button>
                         <Button x:Name="btnThuNgan" Style="{StaticResource NavButtonStyle}" Click="btnThuNgan_Click">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="💳" FontSize="18" Margin="0,0,12,0"/>
+                                <TextBlock Text="📠" FontSize="18" Margin="0,0,12,0"/>
                                 <TextBlock Text="Thu Ngân"/>
                             </StackPanel>
                         </Button>
@@ -125,14 +121,13 @@
                         </Button>
                         <Button x:Name="btnDangXuat" Style="{StaticResource NavButtonStyle}" Click="btnDangXuat_Click" Foreground="#FF5E57">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="🏃" FontSize="18" Margin="0,0,12,0"/>
+                                <TextBlock Text="➜]" FontSize="18" Margin="0,0,12,0"/>
                                 <TextBlock Text="Đăng Xuất"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
                 </ScrollViewer>
 
-                <!-- Admin System Control -->
                 <Border Grid.Row="2" Background="#1E272E" CornerRadius="25,25,0,0" Padding="20">
                     <StackPanel x:Name="spAdminSection">
                         <Button x:Name="btnAdmin" Click="btnAdmin_Click" Height="45" Background="#00B894">
@@ -151,14 +146,12 @@
             </Grid>
         </Border>
 
-        <!-- MAIN CONTENT AREA -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="75"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- TOP BAR -->
             <Border Grid.Row="0" Background="White" Margin="20,10,20,0" CornerRadius="15"
                     BorderBrush="#EDF0F2" BorderThickness="1">
                 <Grid Margin="20,0">
@@ -173,7 +166,7 @@
                         <Border Background="#F1F2F6" CornerRadius="10" Padding="12,6">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="📅" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock x:Name="txtDateDisplay" Text="Hôm nay, 04/05/2026" VerticalAlignment="Center" Foreground="#2F3542" FontWeight="Medium"/>
+                                <TextBlock x:Name="txtDateDisplay" Text="" VerticalAlignment="Center" Foreground="#2F3542" FontWeight="Medium"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -183,7 +176,6 @@
             <Grid Grid.Row="1" Margin="20">
                 <Border Background="White" CornerRadius="20" BorderBrush="#EDF0F2" BorderThickness="1">
                     <Grid>
-                        <!-- GIAO DIỆN CHÀO MỪNG -->
                         <StackPanel x:Name="WelcomePanel" VerticalAlignment="Center" HorizontalAlignment="Center">
                             <Border Width="280" Height="220" Margin="0,0,0,10">
                                 <Image x:Name="imgChef" Stretch="Uniform" RenderOptions.BitmapScalingMode="LowQuality"/>
@@ -194,25 +186,19 @@
                             <TextBlock Text="“Nấu ăn là nghệ thuật, quản lý là một khoa học.”" FontSize="15" FontStyle="Italic" Foreground="#B2BEC3" HorizontalAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- Content hiển thị các chức năng -->
                         <ContentControl x:Name="MainContent"/>
                     </Grid>
                 </Border>
             </Grid>
         </Grid>
 
-        <!-- ĐÂY LÀ PHẦN THÊM VÀO: CUSTOM LOGOUT DIALOG (Phủ lên Grid.ColumnSpan=2) -->
         <Grid x:Name="ConfirmDialog" Grid.ColumnSpan="2" Visibility="Collapsed" Panel.ZIndex="1000">
-            <!-- Lớp phủ mờ nền -->
             <Border Background="#802D3436" MouseLeftButtonDown="btnCancelLogout_Click"/>
-
-            <!-- Khung thông báo -->
             <Border Background="White" CornerRadius="20" Width="380" Height="220" 
                     VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.2"/>
                 </Border.Effect>
-
                 <Grid Margin="25">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>

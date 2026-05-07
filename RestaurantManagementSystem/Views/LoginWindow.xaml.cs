@@ -13,7 +13,6 @@ namespace RestaurantManagementSystem.Views
         {
             InitializeComponent();
 
-            // Kết nối View với bộ não ViewModel
             var vm = new LoginViewModel();
             this.DataContext = vm;
 

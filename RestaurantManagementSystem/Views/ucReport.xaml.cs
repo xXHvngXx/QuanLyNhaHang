@@ -12,11 +12,9 @@ namespace RestaurantManagementSystem.Views
         {
             InitializeComponent();
 
-            // Khởi tạo và gán DataContext
             _viewModel = new ReportViewModel();
             this.DataContext = _viewModel;
 
-            // Đăng ký nhận sự kiện load xong để đổi màu biểu đồ
             _viewModel.OnReportLoaded = (average) =>
             {
                 UpdateChartColor(average);
@@ -32,10 +30,8 @@ namespace RestaurantManagementSystem.Views
             else if (average >= 300000) mainColor = (Color)ColorConverter.ConvertFromString("#F1C40F"); // Vàng
             else mainColor = (Color)ColorConverter.ConvertFromString("#E74C3C"); // Đỏ
 
-            // Cập nhật đường kẻ (Stroke)
             ChartSeries.Stroke = new SolidColorBrush(mainColor);
 
-            // Cập nhật vùng phủ (Fill) bằng Gradient mới
             var gradient = new LinearGradientBrush();
             gradient.StartPoint = new Point(0.5, 0);
             gradient.EndPoint = new Point(0.5, 1);
@@ -47,13 +43,11 @@ namespace RestaurantManagementSystem.Views
 
         private void UserControl_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
-            // Tự động load dữ liệu lần đầu khi mở màn hình
             _viewModel.LoadReport();
         }
 
         private void dtp_SelectedDateChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Khi chọn ngày khác thì tự load lại
             if (this.IsLoaded)
             {
                 _viewModel.LoadReportCommand.Execute(null);
