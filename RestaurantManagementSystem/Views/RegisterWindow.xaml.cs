@@ -1,4 +1,5 @@
-﻿using RestaurantManagementSystem.ViewModels;
+﻿using RestaurantManagementSystem.Models;
+using RestaurantManagementSystem.ViewModels;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,13 +13,17 @@ namespace RestaurantManagementSystem.Views
         public RegisterWindow()
         {
             InitializeComponent();
-            var vm = new RegisterViewModel();
+
+            IMessageService messageService = new MessageService();
+
+            var vm = new RegisterViewModel(messageService);
             this.DataContext = vm;
 
-            // Đăng ký nhận sự kiện từ ViewModel
             vm.OnRegisterSuccess = async () => await RunSuccessAnimation();
             vm.OnRegisterFail = async (header, msg) => await ShowErrorNotification(header, msg);
         }
+
+        #region Animations
 
         private async Task RunSuccessAnimation()
         {
@@ -27,7 +32,7 @@ namespace RestaurantManagementSystem.Views
             brdSuccess.BeginAnimation(OpacityProperty, fadeIn);
 
             await Task.Delay(1500);
-            this.Close(); // Đóng form để về Login
+            this.Close(); 
         }
 
         private async Task ShowErrorNotification(string header, string message)
@@ -46,7 +51,14 @@ namespace RestaurantManagementSystem.Views
             brdError.BeginAnimation(OpacityProperty, fadeOut);
         }
 
-        private void btnClose_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
+        #endregion
+
+        #region Event Handlers
+
+        private void btnClose_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
 
         private void btnBackToLogin_Click(object sender, RoutedEventArgs e) => this.Close();
 
@@ -61,6 +73,18 @@ namespace RestaurantManagementSystem.Views
         {
             txtRegPass.Visibility = Visibility.Visible;
             txtRegPassVisible.Visibility = Visibility.Collapsed;
+            txtRegPass.Focus(); 
         }
+
+        private void Eye_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (txtRegPassVisible.Visibility == Visibility.Visible)
+            {
+                txtRegPass.Visibility = Visibility.Visible;
+                txtRegPassVisible.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        #endregion
     }
 }

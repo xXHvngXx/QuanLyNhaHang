@@ -11,7 +11,6 @@ namespace RestaurantManagementSystem.DTO
         public int CategoryID { get; set; }
         public string CategoryName { get; set; }
 
-        // Hàm khởi tạo (Constructor) để gán giá trị nhanh
         public CategoryDTO(int id, string name)
         {
             this.CategoryID = id;

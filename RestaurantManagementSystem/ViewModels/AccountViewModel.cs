@@ -3,11 +3,14 @@ using System.Data;
 using System.Windows;
 using System.Windows.Input;
 using RestaurantManagementSystem.BLL;
+using RestaurantManagementSystem.Models; 
 
 namespace RestaurantManagementSystem.ViewModels
 {
     public class AccountViewModel : BaseViewModel
     {
+        private readonly IMessageService _messageService = new MessageService();
+
         #region Properties
         private DataView _accountList;
         public DataView AccountList
@@ -48,14 +51,26 @@ namespace RestaurantManagementSystem.ViewModels
         public DataRowView SelectedItem
         {
             get => _selectedItem;
-            set
+            set 
             {
-                if (SetProperty(ref _selectedItem, value) && value != null)
+                if (SetProperty(ref _selectedItem, value))
                 {
-                    UserName = value["UserName"].ToString();
-                    DisplayName = value["DisplayName"].ToString();
-                    AccountType = Convert.ToInt32(value["Role"]);
-                    IsUserNameReadOnly = true;
+                    if (value != null)
+                    {
+                        UserName = value["UserName"]?.ToString();
+                        DisplayName = value["DisplayName"]?.ToString();
+
+                        AccountType = Convert.ToInt32(value["Role"]);
+
+                        IsUserNameReadOnly = true; // Khóa TextBox UserName không cho sửa
+                    }
+                    else
+                    {
+                        UserName = "";
+                        DisplayName = "";
+                        AccountType = -1; // Reset về mặc định
+                        IsUserNameReadOnly = false; 
+                    }
                 }
             }
         }
@@ -73,28 +88,26 @@ namespace RestaurantManagementSystem.ViewModels
         public AccountViewModel()
         {
             LoadCommand = new RelayCommand<object>((p) => RefreshData());
-
             ClearCommand = new RelayCommand<object>((p) => RefreshData());
 
             AddCommand = new RelayCommand<object>(
                 (p) => {
                     if (string.IsNullOrEmpty(UserName))
                     {
-                        MessageBox.Show("Vui lòng nhập tên tài khoản!");
+                        _messageService.ShowError("Lỗi", "Vui lòng nhập tên tài khoản!");
                         return;
                     }
-                    // Mật khẩu mặc định sẽ được xử lý trong BLL dựa trên UserName
                     string msg = AccountBLL.Instance.AddAccount(UserName, DisplayName, AccountType);
-                    MessageBox.Show(msg, "Thông báo");
+                    _messageService.ShowInfo("Thông báo", msg);
                     RefreshData();
                 },
-                (p) => !IsUserNameReadOnly // Chỉ cho phép Add khi đang ở chế độ tạo mới
+                (p) => !IsUserNameReadOnly
             );
 
             EditCommand = new RelayCommand<object>(
                 (p) => {
                     string msg = AccountBLL.Instance.UpdateAccount(UserName, DisplayName, AccountType);
-                    MessageBox.Show(msg, "Thông báo");
+                    _messageService.ShowInfo("Thông báo", msg);
                     RefreshData();
                 },
                 (p) => SelectedItem != null
@@ -102,16 +115,29 @@ namespace RestaurantManagementSystem.ViewModels
 
             DeleteCommand = new RelayCommand<object>(
                 (p) => {
-                    if (UserName.ToLower() == "admin")
+                            // Lấy Role của tài khoản đang được chọn từ ComboBox/Property
+                    int selectedRole = AccountType;
+
+                            // Chặn xóa bất kỳ tài khoản nào thuộc nhóm Quản trị (Role = 0)
+                    if (selectedRole == 0)
                     {
-                        MessageBox.Show("Không được xóa tài khoản quản trị gốc!");
+                        _messageService.ShowError("Lỗi bảo mật", "Không được phép xóa tài khoản thuộc nhóm Quản trị viên!");
                         return;
                     }
 
-                    if (MessageBox.Show($"Xóa tài khoản '{UserName}'?", "Xác nhận", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+                    // Thêm kiểm tra nếu Admin tự xóa chính mình
+                    string currentLoggedUser = RestaurantManagementSystem.DAL.AccountDAL.LoginAccount["UserName"].ToString();
+                    if (UserName.ToLower() == currentLoggedUser.ToLower())
+                    {
+                        _messageService.ShowError("Lỗi", "Bạn không thể tự xóa tài khoản của chính mình khi đang đăng nhập!");
+                        return;
+                    }
+
+                    // Xác nhận xóa các role khác (1, 2, -1)
+                    if (_messageService.ShowConfirm("Xác nhận", $"Bạn có chắc chắn muốn xóa tài khoản '{UserName}'?"))
                     {
                         string msg = AccountBLL.Instance.DeleteAccount(UserName);
-                        MessageBox.Show(msg, "Thông báo");
+                        _messageService.ShowInfo("Thông báo", msg);
                         RefreshData();
                     }
                 },
@@ -120,16 +146,15 @@ namespace RestaurantManagementSystem.ViewModels
 
             ResetPasswordCommand = new RelayCommand<object>(
                 (p) => {
-                     // Thông báo rõ ràng: mật khẩu mới sẽ trùng với UserName
                     string confirmMsg = $"Đặt lại mật khẩu cho '{UserName}'? \n(Mật khẩu mới sẽ trùng với tên tài khoản)";
 
-                    if (MessageBox.Show(confirmMsg, "Xác nhận Reset", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    if (_messageService.ShowConfirm("Xác nhận Reset", confirmMsg))
                     {
                         string msg = AccountBLL.Instance.ResetPassword(UserName);
-                        MessageBox.Show(msg, "Thông báo");
+                        _messageService.ShowInfo("Thông báo", msg);
                     }
                 },
-                (p) => SelectedItem != null && AccountType != 0 //Chặn thay đổi mật khẩu cho quyền quản trị viên
+                (p) => SelectedItem != null
             );
 
             RefreshData();
@@ -137,10 +162,13 @@ namespace RestaurantManagementSystem.ViewModels
 
         private void RefreshData()
         {
-            AccountList = AccountBLL.Instance.GetAccounts().DefaultView;
+            var dt = AccountBLL.Instance.GetAccounts();
+            if (dt != null)
+                AccountList = dt.DefaultView;
+
             UserName = "";
             DisplayName = "";
-            AccountType = 1; // Mặc định khi Clear là nhân viên Phục vụ (Role 1)
+            AccountType = -1;
             IsUserNameReadOnly = false;
             SelectedItem = null;
         }

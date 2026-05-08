@@ -24,13 +24,12 @@
 
                 <TextBlock Grid.Row="0" Text="ĐỊNH VỊ BÀN" FontSize="18" FontWeight="Bold" Foreground="#2D3436" Margin="0,0,0,10"/>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" ClipToBounds="False" Padding="0,10,0,10">
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,10,0,10">
                     <ListBox x:Name="icTables" 
                              ItemsSource="{Binding Tables}" 
                              SelectedItem="{Binding SelectedTable}"
                              Background="Transparent" BorderThickness="0" 
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             ClipToBounds="False">
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemContainerStyle>
                             <Style TargetType="ListBoxItem">
                                 <Setter Property="Padding" Value="0"/>
@@ -76,7 +75,9 @@
                                     <Border x:Name="TableContainer" CornerRadius="10" BorderThickness="3" BorderBrush="Transparent">
                                         <Grid Width="90" Height="90">
                                             <Border x:Name="InnerBorder" CornerRadius="8" Background="#00B894">
-                                                <TextBlock Text="{Binding TableName}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <StackPanel VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding TableName}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                                </StackPanel>
                                             </Border>
                                         </Grid>
                                     </Border>
@@ -86,10 +87,16 @@
                                     <DataTrigger Binding="{Binding Status}" Value="1">
                                         <Setter TargetName="InnerBorder" Property="Background" Value="#FF7675"/>
                                     </DataTrigger>
+
+                                    <DataTrigger Binding="{Binding Status}" Value="0">
+                                        <Setter TargetName="InnerBorder" Property="Background" Value="#00B894"/>
+                                    </DataTrigger>
+
                                     <Trigger SourceName="TableContainer" Property="IsMouseOver" Value="True">
                                         <Setter TargetName="TableContainer" Property="BorderBrush" Value="#2D3436"/>
                                         <Setter TargetName="InnerBorder" Property="Opacity" Value="0.8"/>
                                     </Trigger>
+
                                     <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
                                         <Setter TargetName="CanvasSelectedArrow" Property="Visibility" Value="Visible"/>
                                         <Setter TargetName="TableContainer" Property="BorderBrush" Value="#F1C40F"/>
@@ -121,24 +128,17 @@
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
                     <StackPanel Margin="0,0,5,0">
                         <TextBlock Text="Danh mục" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <ComboBox Width="110" Height="35" 
-                                  ItemsSource="{Binding Categories}" 
-                                  SelectedItem="{Binding SelectedCategory}"
-                                  DisplayMemberPath="CategoryName" />
+                        <ComboBox Width="110" Height="35" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="CategoryName" />
                     </StackPanel>
 
                     <StackPanel Margin="0,0,5,0">
                         <TextBlock Text="Món ăn" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <ComboBox x:Name="cbFood" Width="120" Height="35" 
-                                    ItemsSource="{Binding Foods}" 
-                                    DisplayMemberPath="FoodName" 
-                                    SelectedValuePath="FoodID"
-                                    SelectedItem="{Binding SelectedFood}"/>
+                        <ComboBox Width="120" Height="35" ItemsSource="{Binding Foods}" SelectedItem="{Binding SelectedFood}" DisplayMemberPath="FoodName"/>
                     </StackPanel>
 
                     <StackPanel Margin="0,0,5,0">
                         <TextBlock Text="SL" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Width="35" Height="35" Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" VerticalContentAlignment="Center"/>
+                        <TextBox Width="40" Height="35" Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" VerticalContentAlignment="Center"/>
                     </StackPanel>
 
                     <Button Content="THÊM" Command="{Binding AddFoodCommand}" Width="55" Height="35" Margin="0,20,4,0" Background="#0984E3" Foreground="White" FontWeight="Bold">
@@ -171,7 +171,6 @@
                                 <Setter Property="CornerRadius" Value="8"/>
                             </Style>
                         </Button.Resources>
-                        <Button.ToolTip>Làm mới trang</Button.ToolTip>
                     </Button>
                 </StackPanel>
 
@@ -179,13 +178,12 @@
                           ItemsSource="{Binding BillDetails}" 
                           AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
                           Background="White" BorderThickness="1" BorderBrush="#DFE6E9"
-                          RowHeight="35" ColumnHeaderHeight="40"
                           GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F2F6">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Tên" Binding="{Binding FoodName}" Width="*"/>
+                        <DataGridTextColumn Header="Tên món" Binding="{Binding FoodName}" Width="*"/>
                         <DataGridTextColumn Header="SL" Binding="{Binding Quantity}" Width="50"/>
                         <DataGridTextColumn Header="Đơn giá" Binding="{Binding Price, StringFormat={}{0:N0}}" Width="90"/>
-                        <DataGridTextColumn Header="Tổng" Binding="{Binding Total, StringFormat={}{0:N0}}" Width="100"/>
+                        <DataGridTextColumn Header="Thành tiền" Binding="{Binding TotalPrice, StringFormat={}{0:N0}}" Width="100"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>

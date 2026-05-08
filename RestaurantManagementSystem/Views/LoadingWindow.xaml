@@ -10,27 +10,26 @@
         ResizeMode="NoResize">
 
     <Window.Resources>
-        <Storyboard x:Key="MasterLoadingAnim" RepeatBehavior="Forever">
-
+        <Storyboard x:Key="MasterLoadingAnim">
             <DoubleAnimation Storyboard.TargetProperty="Width"
                              Storyboard.TargetName="ProgressRect"
-                             From="0" To="300" Duration="0:0:2">
+                             From="0" To="300" Duration="0:0:2.5">
                 <DoubleAnimation.EasingFunction>
-                    <PowerEase Power="4" EasingMode="EaseIn"/>
+                    <PowerEase Power="3" EasingMode="EaseInOut"/>
                 </DoubleAnimation.EasingFunction>
             </DoubleAnimation>
 
             <StringAnimationUsingKeyFrames Storyboard.TargetProperty="Text" Storyboard.TargetName="TxtPercent">
                 <DiscreteStringKeyFrame Value="0%" KeyTime="0:0:0" />
-                <DiscreteStringKeyFrame Value="12%" KeyTime="0:0:0.6" />
-                <DiscreteStringKeyFrame Value="35%" KeyTime="0:0:1.1" />
-                <DiscreteStringKeyFrame Value="58%" KeyTime="0:0:1.5" />
-                <DiscreteStringKeyFrame Value="89%" KeyTime="0:0:1.8" />
-                <DiscreteStringKeyFrame Value="100%" KeyTime="0:0:1.95" />
+                <DiscreteStringKeyFrame Value="15%" KeyTime="0:0:0.5" />
+                <DiscreteStringKeyFrame Value="42%" KeyTime="0:0:1.2" />
+                <DiscreteStringKeyFrame Value="78%" KeyTime="0:0:1.8" />
+                <DiscreteStringKeyFrame Value="91%" KeyTime="0:0:2.2" />
+                <DiscreteStringKeyFrame Value="100%" KeyTime="0:0:2.5" />
             </StringAnimationUsingKeyFrames>
 
             <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="MainBorder"
-                             From="1" To="0.9" BeginTime="0:0:2" Duration="0:0:0.2" AutoReverse="True"/>
+                             From="1" To="0" BeginTime="0:0:2.7" Duration="0:0:0.3"/>
         </Storyboard>
     </Window.Resources>
 
@@ -43,13 +42,12 @@
     <Grid>
         <Border x:Name="MainBorder" Background="White" CornerRadius="25" Width="450" Height="220">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="30" ShadowDepth="0" Opacity="0.1" Color="Black"/>
+                <DropShadowEffect BlurRadius="40" ShadowDepth="0" Opacity="0.15" Color="#2d3436"/>
             </Border.Effect>
 
             <Grid>
                 <StackPanel VerticalAlignment="Center">
-
-                    <TextBlock FontSize="26" FontWeight="Black" HorizontalAlignment="Center" Margin="0,0,0,30">
+                    <TextBlock FontSize="28" FontWeight="Black" HorizontalAlignment="Center" Margin="0,0,0,25">
                         <TextBlock.Foreground>
                             <LinearGradientBrush EndPoint="1,1" StartPoint="0,0">
                                 <GradientStop Color="#2d3436" Offset="0"/>
@@ -60,35 +58,31 @@
                     </TextBlock>
 
                     <StackPanel Width="310">
-                        <TextBlock x:Name="TxtPercent" 
-                                   Text="0%" 
-                                   HorizontalAlignment="Center" 
-                                   Foreground="Black" 
-                                   FontSize="22" 
-                                   FontWeight="Bold" 
-                                   Margin="0,0,0,10"/>
+                        <TextBlock x:Name="TxtPercent" Text="0%" HorizontalAlignment="Center" 
+                                   Foreground="#2d3436" FontSize="22" FontWeight="Bold" Margin="0,0,0,12"/>
 
-                        <Grid Height="16">
-                            <Border BorderBrush="Black" BorderThickness="1.5" CornerRadius="8"/>
-
-                            <Rectangle x:Name="ProgressRect" 
-                                       Width="0" 
-                                       HorizontalAlignment="Left" 
-                                       Fill="Black" 
-                                       RadiusX="5" RadiusY="5" 
-                                       Margin="3,2,3,2"/>
+                        <Grid Height="12">
+                            <Border Background="#f1f2f6" CornerRadius="6"/>
+                            <Rectangle x:Name="ProgressRect" Width="0" HorizontalAlignment="Left" RadiusX="6" RadiusY="6">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#74b9ff" Offset="0"/>
+                                        <GradientStop Color="#0984e3" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
                         </Grid>
                     </StackPanel>
-
                 </StackPanel>
 
                 <TextBlock Text="INITIALIZING RESOURCES..." 
                            VerticalAlignment="Bottom" 
                            HorizontalAlignment="Center" 
-                           Margin="0,0,0,15" 
+                           Margin="0,0,0,20" 
                            Foreground="#b2bec3" 
-                           FontSize="9" 
-                           FontWeight="Bold"/>
+                           FontSize="10" 
+                           FontWeight="SemiBold"
+                           FontStretch="Expanded"/>
             </Grid>
         </Border>
     </Grid>

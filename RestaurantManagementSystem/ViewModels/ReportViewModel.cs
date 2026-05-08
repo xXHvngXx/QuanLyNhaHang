@@ -36,16 +36,14 @@ namespace RestaurantManagementSystem.ViewModels
 
         public ReportViewModel()
         {
-            // 1. Khởi tạo giá trị mặc định
+            // Khởi tạo giá trị mặc định
             FromDate = DateTime.Now.AddDays(-7);
             ToDate = DateTime.Now;
             ChartValues = new ChartValues<double>();
             ChartLabels = new List<string>();
             YFormatter = value => value.ToString("N0") + " đ";
 
-            // 2. FIX FULL: Khởi tạo Command khớp với RelayCommand<T>
-            // Tham số 1: Action<object> (Hàm thực thi)
-            // Tham số 2: Predicate<object> (Điều kiện thực thi)
+            // Khởi tạo Command khớp với RelayCommand<T>
             LoadReportCommand = new RelayCommand<object>(
                 (p) => { LoadReport(); },
                 (p) => true
@@ -61,11 +59,15 @@ namespace RestaurantManagementSystem.ViewModels
         {
             try
             {
-                // Lấy dữ liệu từ tầng BLL
-                DataTable dtBill = BillBLL.Instance.GetListBill(FromDate, ToDate);
+                DateTime startDate = FromDate.Date;
+
+                DateTime endDate = ToDate.Date.AddDays(1).AddTicks(-1);
+                // ------------------------------
+
+                DataTable dtBill = BillBLL.Instance.GetListBill(startDate, endDate);
                 BillList = dtBill.DefaultView;
 
-                DataTable dtChart = BillBLL.Instance.GetChartData(FromDate, ToDate);
+                DataTable dtChart = BillBLL.Instance.GetChartData(startDate, endDate);
 
                 ChartValues.Clear();
                 ChartLabels.Clear();
@@ -77,12 +79,12 @@ namespace RestaurantManagementSystem.ViewModels
                     {
                         double dailyTotal = Convert.ToDouble(row["Total"]);
                         ChartValues.Add(dailyTotal);
+
                         ChartLabels.Add(Convert.ToDateTime(row["Date"]).ToString("dd/MM"));
                         totalRevenue += dailyTotal;
                     }
                     double average = totalRevenue / dtChart.Rows.Count;
 
-                    // Bắn sự kiện về View để cập nhật màu Stroke/Fill
                     OnReportLoaded?.Invoke(average);
                 }
                 else

@@ -38,14 +38,14 @@
                 <TextBlock Text="Loại tài khoản:" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,0,5"/>
 
                 <ComboBox x:Name="cbAccountType" 
-                          SelectedIndex="{Binding AccountType}"
-                          Height="35" Padding="10,8" Margin="0,0,0,25">
-                    <ComboBoxItem Content="Quản trị viên (Directeur)"/>
-                    <!-- Index 0 = Role 0 -->
-                    <ComboBoxItem Content="Nhân viên phục vụ (Serveur)"/>
-                    <!-- Index 1 = Role 1 -->
-                    <ComboBoxItem Content="Nhân viên thu ngân (Caissier)"/>
-                    <!-- Index 2 = Role 2 -->
+                            SelectedValue="{Binding AccountType}" 
+                            SelectedValuePath="Tag"
+                            Height="35" Padding="10,8" Margin="0,0,0,25">
+
+                    <ComboBoxItem Content="Tài khoản đang đóng băng / Chờ xác minh" Tag="-1"/>
+                    <ComboBoxItem Content="Quản trị viên (Directeur)" Tag="0"/>
+                    <ComboBoxItem Content="Nhân viên phục vụ (Serveur)" Tag="1"/>
+                    <ComboBoxItem Content="Nhân viên thu ngân (Caissier)" Tag="2"/>
                 </ComboBox>
 
                 <UniformGrid Columns="2" Rows="2" VerticalAlignment="Top" Margin="0,0,0,15">
@@ -99,6 +99,10 @@
                                                     <DataTrigger Binding="{Binding Role}" Value="2">
                                                         <Setter Property="Text" Value="Thu ngân"/>
                                                         <Setter Property="Foreground" Value="#2980B9"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Role}" Value="-1">
+                                                        <Setter Property="Text" Value="None"/>
+                                                        <Setter Property="Foreground" Value="Black"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>

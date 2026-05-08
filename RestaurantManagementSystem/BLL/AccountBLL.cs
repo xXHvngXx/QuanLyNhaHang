@@ -46,7 +46,6 @@ namespace RestaurantManagementSystem.BLL
             if (string.IsNullOrWhiteSpace(displayName))
                 return "Tên hiển thị không được để trống!";
 
-            // Lưu ý: Update chỉ sửa thông tin, KHÔNG sửa mật khẩu
             if (AccountDAL.Instance.UpdateAccount(userName, displayName, role))
                 return "Cập nhật tài khoản thành công!";
 

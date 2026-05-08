@@ -1,21 +1,51 @@
 ﻿<Window x:Class="RestaurantManagementSystem.Views.BillPreviewWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Xem trước hóa đơn" Height="750" Width="450" 
-        WindowStartupLocation="CenterScreen" Background="#F1F2F6">
+        Title="Xem trước hóa đơn - HUIT Restaurant" 
+        Height="750" Width="480" 
+        WindowStartupLocation="CenterScreen" 
+        Background="#F1F2F6"
+        WindowStyle="SingleBorderWindow">
+
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Style.Resources>
+                <Style TargetType="Border">
+                    <Setter Property="CornerRadius" Value="5"/>
+                </Style>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <DocumentViewer Name="docViewer" Background="White" Margin="10"/>
+        <DocumentViewer Name="docViewer" Background="#DFDFDF" Margin="10">
+            <DocumentViewer.Template>
+                <ControlTemplate TargetType="DocumentViewer">
+                    <Border BorderThickness="{TemplateBinding BorderThickness}" 
+                            BorderBrush="{TemplateBinding BorderBrush}">
+                        <ScrollViewer x:Name="PART_ContentHost" CanContentScroll="true" />
+                    </Border>
+                </ControlTemplate>
+            </DocumentViewer.Template>
+        </DocumentViewer>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
-            <Button Content="IN NGAY" Width="100" Height="35" Click="BtnPrint_Click" 
-                    Background="#2ECC71" Foreground="White" FontWeight="Bold" Margin="5"/>
-            <Button Content="ĐÓNG" Width="80" Height="35" Click="BtnClose_Click" 
-                    Background="#636E72" Foreground="White" Margin="5"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10,0,10,15">
+            <Button Content="IN HÓA ĐƠN" Width="120" Height="40" Click="BtnPrint_Click" 
+                    Background="#27AE60" Foreground="White" FontWeight="Bold" Margin="5">
+                <Button.Effect>
+                    <DropShadowEffect BlurRadius="5" ShadowDepth="1" Opacity="0.3"/>
+                </Button.Effect>
+            </Button>
+
+            <Button Content="HỦY BỎ" Width="100" Height="40" Click="BtnClose_Click" 
+                    Background="#D63031" Foreground="White" Margin="5"/>
         </StackPanel>
     </Grid>
 </Window>

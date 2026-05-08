@@ -20,9 +20,33 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Storyboard x:Key="RegisterEntranceAnim">
+            <DoubleAnimation Storyboard.TargetName="MainRegBorder"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0" To="1" Duration="0:0:0.6"/>
+
+            <DoubleAnimation Storyboard.TargetName="MainRegBorder"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                             From="50" To="0" Duration="0:0:0.6">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
     </Window.Resources>
 
-    <Border Background="White" CornerRadius="30">
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard Storyboard="{StaticResource RegisterEntranceAnim}"/>
+        </EventTrigger>
+    </Window.Triggers>
+
+    <Border x:Name="MainRegBorder" Background="White" CornerRadius="30" Opacity="0">
+        <Border.RenderTransform>
+            <TranslateTransform Y="0"/>
+        </Border.RenderTransform>
+
         <Border.Effect>
             <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.2"/>
         </Border.Effect>
@@ -54,7 +78,7 @@
                     </Grid>
                 </Border>
 
-                <Button x:Name="btnRegister" Content="ĐĂNG KÝ NGAY" Margin="0,35,0,0" Height="45"
+                <Button x:Name="btnRegister" Content="ĐĂNG KÝ NGAY" Margin="0,35,0,0" Height="45" IsDefault="True"
                         Background="#00B894" Foreground="White" FontWeight="Bold"
                         Command="{Binding RegisterCommand}"
                         CommandParameter="{Binding ElementName=txtRegPass}">

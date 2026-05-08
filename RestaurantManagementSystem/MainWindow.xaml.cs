@@ -127,8 +127,14 @@ namespace RestaurantManagementSystem
 
         private void SetDynamicGreeting(int hour)
         {
+            int role = Convert.ToInt32(AccountDAL.LoginAccount["Role"]);
             string greeting = (hour >= 5 && hour < 12) ? "☕ Chào buổi sáng," :
-                             (hour >= 12 && hour < 18) ? "🌤️ Chào buổi chiều," : "🌙 Chào buổi tối,";
+                              (hour >= 12 && hour < 18) ? "🌤️ Chào buổi chiều," : "🌙 Chào buổi tối,";
+
+            if (role == -1)
+            {
+                greeting = "👋 Chào mừng cộng tác viên mới,";
+            }
 
             if (txtGreeting.Text != greeting) txtGreeting.Text = greeting;
         }
@@ -136,20 +142,30 @@ namespace RestaurantManagementSystem
         private void PhanQuyen()
         {
             if (AccountDAL.LoginAccount == null) return;
-            int role = (int)AccountDAL.LoginAccount["Role"];
+
+            int role = Convert.ToInt32(AccountDAL.LoginAccount["Role"]);
+
             spAdminSection.Visibility = (role == 0) ? Visibility.Visible : Visibility.Collapsed;
-            btnPhucVu.Visibility = (role <= 1) ? Visibility.Visible : Visibility.Collapsed;
+
+            btnPhucVu.Visibility = (role == 0 || role == 1) ? Visibility.Visible : Visibility.Collapsed;
+
             btnThuNgan.Visibility = (role == 0 || role == 2) ? Visibility.Visible : Visibility.Collapsed;
+
         }
 
         public void LoadUserUI()
         {
             if (AccountDAL.LoginAccount == null) return;
+
             string name = AccountDAL.LoginAccount["DisplayName"]?.ToString() ?? "USER";
             txtUserDisplayName.Text = name.ToUpper();
-            txtAvatarInitial.Text = !string.IsNullOrEmpty(name) ? name[0].ToString().ToUpper() : "H";
-            int type = (int)AccountDAL.LoginAccount["Role"];
-            txtRoleBadge.Text = (type == 0) ? "👑 Admin" : (type == 1) ? "👤 Staff" : "💵 Cashier";
+            txtAvatarInitial.Text = !string.IsNullOrWhiteSpace(name) ? name[0].ToString().ToUpper() : "H";
+
+            int type = Convert.ToInt32(AccountDAL.LoginAccount["Role"]);
+
+            txtRoleBadge.Text = (type == 0) ? "👑 Admin" :
+                                (type == 1) ? "👤 Staff" :
+                                (type == 2) ? "💵 Cashier" : "⌛ Chờ duyệt";
         }
 
         private void btnDoiMatKhau_Click(object sender, RoutedEventArgs e)

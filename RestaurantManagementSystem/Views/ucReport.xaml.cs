@@ -23,12 +23,12 @@ namespace RestaurantManagementSystem.Views
 
         private void UpdateChartColor(double average)
         {
-            if (ChartSeries == null) return;
+            if (ChartSeries == null || double.IsNaN(average)) return;
 
             Color mainColor;
-            if (average >= 400000) mainColor = (Color)ColorConverter.ConvertFromString("#2ECC71"); // Xanh
-            else if (average >= 300000) mainColor = (Color)ColorConverter.ConvertFromString("#F1C40F"); // Vàng
-            else mainColor = (Color)ColorConverter.ConvertFromString("#E74C3C"); // Đỏ
+            if (average >= 400000) mainColor = (Color)ColorConverter.ConvertFromString("#2ECC71");
+            else if (average >= 300000) mainColor = (Color)ColorConverter.ConvertFromString("#F1C40F");
+            else mainColor = (Color)ColorConverter.ConvertFromString("#E74C3C");
 
             ChartSeries.Stroke = new SolidColorBrush(mainColor);
 
@@ -36,7 +36,7 @@ namespace RestaurantManagementSystem.Views
             gradient.StartPoint = new Point(0.5, 0);
             gradient.EndPoint = new Point(0.5, 1);
             gradient.GradientStops.Add(new GradientStop(mainColor, 0));
-            gradient.GradientStops.Add(new GradientStop(Color.FromArgb(0, mainColor.R, mainColor.G, mainColor.B), 1.2));
+            gradient.GradientStops.Add(new GradientStop(Color.FromArgb(0, mainColor.R, mainColor.G, mainColor.B), 1.0));
 
             ChartSeries.Fill = gradient;
         }

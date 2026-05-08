@@ -7,25 +7,19 @@ using System.Windows.Controls;
 using RestaurantManagementSystem.DAL;
 using RestaurantManagementSystem.Models;
 
+
 namespace RestaurantManagementSystem.ViewModels
 {
-    //Kiểm tra select và fix thành thủ tục sp sau
     public class LoginViewModel : BaseViewModel
     {
+        private readonly IMessageService _messageService;
+
         #region Properties
         private string _userName;
-        public string UserName
-        {
-            get => _userName;
-            set => SetProperty(ref _userName, value);
-        }
+        public string UserName { get => _userName; set => SetProperty(ref _userName, value); }
 
         private bool _isProcessing;
-        public bool IsProcessing
-        {
-            get => _isProcessing;
-            set => SetProperty(ref _isProcessing, value);
-        }
+        public bool IsProcessing { get => _isProcessing; set => SetProperty(ref _isProcessing, value); }
 
         public Action OnLoginSuccess { get; set; }
         public Action OnLoginFail { get; set; }
@@ -35,25 +29,31 @@ namespace RestaurantManagementSystem.ViewModels
         public ICommand LoginCommand { get; set; }
         #endregion
 
-        public LoginViewModel()
+        public LoginViewModel(IMessageService messageService)
         {
-            LoginCommand = new RelayCommand<object>(
+            _messageService = messageService;
+
+            // Khởi tạo Command với async/await chuẩn
+            LoginCommand = new RelayCommand<PasswordBox>(
                 async (p) => await ExecuteLogin(p),
                 (p) => !IsProcessing
             );
         }
 
-        private async Task ExecuteLogin(object parameter)
+        private async Task ExecuteLogin(PasswordBox passwordBox)
         {
-            var passwordBox = parameter as PasswordBox;
-            if (passwordBox == null || string.IsNullOrEmpty(UserName)) return;
+            if (passwordBox == null || string.IsNullOrWhiteSpace(UserName))
+            {
+                _messageService.ShowError("Thông báo", "Vui lòng nhập đầy đủ tài khoản và mật khẩu!");
+                return;
+            }
 
             string passWord = passwordBox.Password.Trim();
-            IsProcessing = true; // Lúc này CanExecute sẽ trả về false, nút Login tự Disable
+            IsProcessing = true;
 
             try
             {
-                // Chạy logic kiểm tra Database ở luồng ngầm
+                // Task.Run giúp giải phóng UI Thread khi truy vấn SQL
                 bool isSuccess = await Task.Run(() => LoginLogic(UserName, passWord));
 
                 if (isSuccess)
@@ -63,15 +63,16 @@ namespace RestaurantManagementSystem.ViewModels
                 else
                 {
                     OnLoginFail?.Invoke();
+                   
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi hệ thống: " + ex.Message);
+                _messageService.ShowError("Lỗi hệ thống", ex.Message);
             }
             finally
             {
-                IsProcessing = false; // Xử lý xong, nút Login sẽ Enable trở lại
+                IsProcessing = false;
             }
         }
 
@@ -80,12 +81,14 @@ namespace RestaurantManagementSystem.ViewModels
             string query = "EXEC USP_Login @userName";
             DataTable result = DataProvider.Instance.ExecuteQuery(query, new object[] { userName });
 
-            if (result.Rows.Count > 0)
+            if (result != null && result.Rows.Count > 0)
             {
                 string hashFromDB = result.Rows[0]["Password"].ToString();
 
+                // Kiểm tra bảo mật bằng Helper
                 if (SecurityHelper.VerifyPassword(passWord, hashFromDB))
                 {
+                    // Lưu thông tin người đăng nhập vào tầng DAL
                     AccountDAL.LoginAccount = result.Rows[0];
                     return true;
                 }

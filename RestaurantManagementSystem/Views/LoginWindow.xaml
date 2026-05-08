@@ -20,9 +20,33 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Storyboard x:Key="WindowEntranceAnim">
+            <DoubleAnimation Storyboard.TargetName="MainBorder"
+                             Storyboard.TargetProperty="Opacity"
+                             From="0" To="1" Duration="0:0:0.6"/>
+
+            <DoubleAnimation Storyboard.TargetName="MainBorder"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                             From="40" To="0" Duration="0:0:0.6">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
     </Window.Resources>
 
-    <Border Background="White" CornerRadius="30">
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard Storyboard="{StaticResource WindowEntranceAnim}"/>
+        </EventTrigger>
+    </Window.Triggers>
+
+    <Border x:Name="MainBorder" Background="White" CornerRadius="30" Opacity="0">
+        <Border.RenderTransform>
+            <TranslateTransform Y="0"/>
+        </Border.RenderTransform>
+
         <Border.Effect>
             <DropShadowEffect BlurRadius="20" ShadowDepth="0" Opacity="0.2"/>
         </Border.Effect>
@@ -47,9 +71,7 @@
                 <Border BorderBrush="#DFE6E9" BorderThickness="1" CornerRadius="10" Padding="5">
                     <Grid>
                         <PasswordBox x:Name="txtPassword" BorderThickness="0" VerticalContentAlignment="Center" Height="30" Padding="0,0,30,0"/>
-
                         <TextBox x:Name="txtPasswordVisible" BorderThickness="0" VerticalContentAlignment="Center" Height="30" Padding="0,0,30,0" Visibility="Collapsed"/>
-
                         <Button Style="{StaticResource EyeButtonStyle}" 
                                 Content="👁" 
                                 HorizontalAlignment="Right" 
@@ -59,7 +81,7 @@
                     </Grid>
                 </Border>
 
-                <Button x:Name="btnLogin" Content="ĐĂNG NHẬP" Margin="0,35,0,0" Height="45"
+                <Button x:Name="btnLogin" Content="ĐĂNG NHẬP" Margin="0,35,0,0" Height="45" IsDefault="True"
                         Background="#0984E3" Foreground="White" FontWeight="Bold" Command="{Binding LoginCommand}" CommandParameter="{Binding ElementName=txtPassword}">
                     <Button.Resources>
                         <Style TargetType="Border">

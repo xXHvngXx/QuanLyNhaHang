@@ -24,7 +24,7 @@ namespace RestaurantManagementSystem.Views
         public ucWaiter()
         {
             InitializeComponent();
-            this.DataContext = new WaiterViewModel();
+            this.DataContext = new WaiterViewModel(new MessageService());
 
         }
     }

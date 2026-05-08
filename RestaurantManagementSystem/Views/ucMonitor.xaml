@@ -129,12 +129,70 @@
                 <TextBlock Text="⚠️ PHÂN TÍCH HÀNH VI NGHI VẤN (AI CAMERA &amp; LOG)" FontWeight="Bold" Margin="0,0,0,10" Foreground="#E67E22"/>
                 <DataGrid Grid.Row="1" ItemsSource="{Binding AuditLogs}" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="0" Background="Transparent">
                     <DataGrid.Columns>
+                        <DataGridTextColumn Header="Ngày" Binding="{Binding [Ngày], StringFormat=\{0:dd/MM\}}" Width="60">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#7F8C8D"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
                         <DataGridTextColumn Header="Bill" Binding="{Binding [Mã Bill]}" Width="50"/>
-                        <DataGridTextColumn Header="Giờ" Binding="{Binding [Giờ]}" Width="80"/>
-                        <DataGridTextColumn Header="Hành động" Binding="{Binding [Hành Động]}" Width="110"/>
-                        <DataGridTextColumn Header="Tiền Trước" Binding="{Binding [Tiền Trước], StringFormat={}{0:N0}}" Width="100"/>
-                        <DataGridTextColumn Header="Tiền Sau" Binding="{Binding [Tiền Sau], StringFormat={}{0:N0}}" Width="100"/>
+
+                        <DataGridTextColumn Header="Giờ" Binding="{Binding [Giờ]}" Width="80">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Hành động" Binding="{Binding [Hành Động]}" Width="110">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding [Hành Động]}" Value="XÓA MÓN">
+                                            <Setter Property="Foreground" Value="#E67E22"/>
+                                            <Setter Property="FontWeight" Value="Bold"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding [Hành Động]}" Value="GIẢM MÓN">
+                                            <Setter Property="Foreground" Value="#F1C40F"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding [Hành Động]}" Value="THANH TOÁN">
+                                            <Setter Property="Foreground" Value="#3498DB"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Tiền Trước" Binding="{Binding [Tiền Trước], StringFormat={}{0:N0}}" Width="100">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="#95A5A6"/>
+                                    <Setter Property="TextAlignment" Value="Right"/>
+                                    <Setter Property="Margin" Value="0,0,10,0"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
+                        <DataGridTextColumn Header="Tiền Sau" Binding="{Binding [Tiền Sau], StringFormat={}{0:N0}}" Width="100">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="TextAlignment" Value="Right"/>
+                                    <Setter Property="Margin" Value="0,0,10,0"/>
+                                    <Style.Triggers>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+
                         <DataGridTextColumn Header="Nhân viên" Binding="{Binding [Nhân Viên]}" Width="100"/>
+
                         <DataGridTextColumn Header="Chi Tiết" Binding="{Binding [Chi Tiết]}" Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>

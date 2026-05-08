@@ -1,4 +1,4 @@
-﻿using System.Reflection.Metadata;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -10,18 +10,33 @@ namespace RestaurantManagementSystem.Views
         public BillPreviewWindow(FixedDocument doc)
         {
             InitializeComponent();
-            docViewer.Document = doc;
+
+            if (doc != null)
+            {
+                docViewer.Document = doc;
+            }
         }
 
         private void BtnPrint_Click(object sender, RoutedEventArgs e)
         {
-            PrintDialog pd = new PrintDialog();
-            if (pd.ShowDialog() == true)
+            try
             {
-                pd.PrintDocument(docViewer.Document.DocumentPaginator, "In Hoa Don");
+                PrintDialog pd = new PrintDialog();
 
-                this.DialogResult = true;
-                this.Close();
+                // Hiển thị hộp thoại chọn máy in
+                if (pd.ShowDialog() == true)
+                {
+                    // Thực hiện in tài liệu
+                    pd.PrintDocument(docViewer.Document.DocumentPaginator, "In hóa đơn nhà hàng");
+
+                    // Trả về true để báo cho phía gọi window này biết là đã in thành công
+                    this.DialogResult = true;
+                    this.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi máy in: " + ex.Message, "Thông báo", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

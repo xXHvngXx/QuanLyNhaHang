@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using Microsoft.Data.SqlClient; // Nếu dùng .NET 6/8, cài NuGet package này
+using Microsoft.Data.SqlClient; 
 
 namespace RestaurantManagementSystem.Models
 {
