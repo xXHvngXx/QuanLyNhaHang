@@ -15,15 +15,12 @@ namespace RestaurantManagementSystem
         private ucCashier _ucCashier;
         private BitmapImage _preloadedChefGif;
         private DispatcherTimer _clockTimer;
+        private int _currentAccountRole = -1; 
 
         public MainWindow()
         {
             RenderOptions.SetBitmapScalingMode(this, BitmapScalingMode.LowQuality);
-
             InitializeComponent();
-
-            StartRealTimeClock();
-
             this.Loaded += MainWindow_Loaded;
         }
 
@@ -33,10 +30,11 @@ namespace RestaurantManagementSystem
             _clockTimer.Interval = TimeSpan.FromSeconds(1);
             _clockTimer.Tick += (s, e) =>
             {
+                // Kiểm tra an toàn trước khi xử lý thời gian thực
+                if (AccountDAL.LoginAccount == null) return;
+
                 DateTime now = DateTime.Now;
-
                 txtDateDisplay.Text = $"Hôm nay, {now.ToString("dd/MM/yyyy")}";
-
                 SetDynamicGreeting(now.Hour);
             };
             _clockTimer.Start();
@@ -44,9 +42,16 @@ namespace RestaurantManagementSystem
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
+            // Trích xuất quyền tài khoản ra biến tạm ngay từ khi ứng dụng tải xong
+            if (AccountDAL.LoginAccount != null)
+            {
+                _currentAccountRole = Convert.ToInt32(AccountDAL.LoginAccount["Role"]);
+            }
+
             PhanQuyen();
             LoadUserUI();
             ShowHomePage();
+            StartRealTimeClock(); // Khởi chạy đồng hồ sau khi dữ liệu phân quyền sẵn sàng
 
             await Dispatcher.Yield(DispatcherPriority.ApplicationIdle);
 
@@ -82,14 +87,18 @@ namespace RestaurantManagementSystem
         {
             try
             {
-                _preloadedChefGif = new BitmapImage();
-                _preloadedChefGif.BeginInit();
-                _preloadedChefGif.UriSource = new Uri("pack://application:,,,/chef_animated.gif");
-                _preloadedChefGif.CacheOption = BitmapCacheOption.OnLoad;
-                _preloadedChefGif.EndInit();
-                _preloadedChefGif.Freeze();
+                BitmapImage img = new BitmapImage();
+                img.BeginInit();
+                img.UriSource = new Uri("pack://application:,,,/chef_animated.gif");
+                img.CacheOption = BitmapCacheOption.OnLoad;
+                img.EndInit();
+                img.Freeze();
+                _preloadedChefGif = img;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Lỗi tải hoạt ảnh: " + ex.Message);
+            }
         }
 
         private void NavigateTo(UIElement content, string title, string icon, string breadcrumb)
@@ -127,11 +136,10 @@ namespace RestaurantManagementSystem
 
         private void SetDynamicGreeting(int hour)
         {
-            int role = Convert.ToInt32(AccountDAL.LoginAccount["Role"]);
             string greeting = (hour >= 5 && hour < 12) ? "☕ Chào buổi sáng," :
                               (hour >= 12 && hour < 18) ? "🌤️ Chào buổi chiều," : "🌙 Chào buổi tối,";
 
-            if (role == -1)
+            if (_currentAccountRole == -1)
             {
                 greeting = "👋 Chào mừng cộng tác viên mới,";
             }
@@ -141,16 +149,9 @@ namespace RestaurantManagementSystem
 
         private void PhanQuyen()
         {
-            if (AccountDAL.LoginAccount == null) return;
-
-            int role = Convert.ToInt32(AccountDAL.LoginAccount["Role"]);
-
-            spAdminSection.Visibility = (role == 0) ? Visibility.Visible : Visibility.Collapsed;
-
-            btnPhucVu.Visibility = (role == 0 || role == 1) ? Visibility.Visible : Visibility.Collapsed;
-
-            btnThuNgan.Visibility = (role == 0 || role == 2) ? Visibility.Visible : Visibility.Collapsed;
-
+            spAdminSection.Visibility = (_currentAccountRole == 0) ? Visibility.Visible : Visibility.Collapsed;
+            btnPhucVu.Visibility = (_currentAccountRole == 0 || _currentAccountRole == 1) ? Visibility.Visible : Visibility.Collapsed;
+            btnThuNgan.Visibility = (_currentAccountRole == 0 || _currentAccountRole == 2) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public void LoadUserUI()
@@ -161,18 +162,16 @@ namespace RestaurantManagementSystem
             txtUserDisplayName.Text = name.ToUpper();
             txtAvatarInitial.Text = !string.IsNullOrWhiteSpace(name) ? name[0].ToString().ToUpper() : "H";
 
-            int type = Convert.ToInt32(AccountDAL.LoginAccount["Role"]);
-
-            txtRoleBadge.Text = (type == 0) ? "👑 Admin" :
-                                (type == 1) ? "👤 Staff" :
-                                (type == 2) ? "💵 Cashier" : "⌛ Chờ duyệt";
+            txtRoleBadge.Text = (_currentAccountRole == 0) ? "👑 Admin" :
+                                (_currentAccountRole == 1) ? "👤 Staff" :
+                                (_currentAccountRole == 2) ? "💵 Cashier" : "⌛ Chờ duyệt";
         }
 
         private void btnDoiMatKhau_Click(object sender, RoutedEventArgs e)
         {
             ChangePasswordWindow wd = new ChangePasswordWindow();
-            wd.Owner = this; 
-            wd.ShowDialog(); 
+            wd.Owner = this;
+            wd.ShowDialog();
         }
 
         private void btnDangXuat_Click(object sender, RoutedEventArgs e)
@@ -195,6 +194,56 @@ namespace RestaurantManagementSystem
             loginWindow.Show();
 
             this.Close();
+        }
+        private bool isMenuCollapsed = false;
+
+        private void btnToggleMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isMenuCollapsed)
+            {
+                NavColumn.Width = new GridLength(70);
+
+                UserInfoSection.Visibility = Visibility.Collapsed;
+
+                lblMainMenu.Visibility = Visibility.Collapsed;
+                lblUserSettings.Visibility = Visibility.Collapsed;
+
+                txtHome.Visibility = Visibility.Collapsed;
+                txtPhucVu.Visibility = Visibility.Collapsed;
+                txtThuNgan.Visibility = Visibility.Collapsed;
+                txtDoiMatKhau.Visibility = Visibility.Collapsed;
+                txtDangXuat.Visibility = Visibility.Collapsed;
+
+                btnToggleMenu.HorizontalAlignment = HorizontalAlignment.Center;
+                txtToggleIcon.Text = "☰";
+                txtToggleIcon.FontSize = 18;
+                btnToggleMenu.Margin = new Thickness(0, 12, 0, 0);
+
+                this.Tag = "Collapsed";
+                isMenuCollapsed = true;
+            }
+            else
+            {
+                NavColumn.Width = new GridLength(240);
+
+                UserInfoSection.Visibility = Visibility.Visible;
+                lblMainMenu.Visibility = Visibility.Visible;
+                lblUserSettings.Visibility = Visibility.Visible;
+
+                txtHome.Visibility = Visibility.Visible;
+                txtPhucVu.Visibility = Visibility.Visible;
+                txtThuNgan.Visibility = Visibility.Visible;
+                txtDoiMatKhau.Visibility = Visibility.Visible;
+                txtDangXuat.Visibility = Visibility.Visible;
+
+                txtToggleIcon.Text = "◧";
+                txtToggleIcon.FontSize = 15;
+                btnToggleMenu.HorizontalAlignment = HorizontalAlignment.Right;
+                btnToggleMenu.Margin = new Thickness(0, 12, 15, 0);
+
+                this.Tag = "Expanded";
+                isMenuCollapsed = false;
+            }
         }
     }
 }

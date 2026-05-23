@@ -27,7 +27,7 @@
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,10,0,10">
                     <ListBox x:Name="icTables" 
                              ItemsSource="{Binding Tables}" 
-                             SelectedItem="{Binding SelectedTable}"
+                             SelectedItem="{Binding SelectedTable, Mode=TwoWay}"
                              Background="Transparent" BorderThickness="0" 
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemContainerStyle>
@@ -87,16 +87,13 @@
                                     <DataTrigger Binding="{Binding Status}" Value="1">
                                         <Setter TargetName="InnerBorder" Property="Background" Value="#FF7675"/>
                                     </DataTrigger>
-
                                     <DataTrigger Binding="{Binding Status}" Value="0">
                                         <Setter TargetName="InnerBorder" Property="Background" Value="#00B894"/>
                                     </DataTrigger>
-
                                     <Trigger SourceName="TableContainer" Property="IsMouseOver" Value="True">
                                         <Setter TargetName="TableContainer" Property="BorderBrush" Value="#2D3436"/>
                                         <Setter TargetName="InnerBorder" Property="Opacity" Value="0.8"/>
                                     </Trigger>
-
                                     <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
                                         <Setter TargetName="CanvasSelectedArrow" Property="Visibility" Value="Visible"/>
                                         <Setter TargetName="TableContainer" Property="BorderBrush" Value="#F1C40F"/>
@@ -127,18 +124,35 @@
 
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
                     <StackPanel Margin="0,0,5,0">
-                        <TextBlock Text="Danh mục" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <ComboBox Width="110" Height="35" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="CategoryName" />
+                        <TextBlock Text="Danh mục" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12" Foreground="#636E72"/>
+                        <ComboBox Width="110" Height="35" 
+                                    ItemsSource="{Binding Categories}" 
+                                    SelectedValue="{Binding SelectedCategoryId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    SelectedValuePath="CategoryID"
+                                    DisplayMemberPath="CategoryName" />
                     </StackPanel>
 
                     <StackPanel Margin="0,0,5,0">
-                        <TextBlock Text="Món ăn" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <ComboBox Width="120" Height="35" ItemsSource="{Binding Foods}" SelectedItem="{Binding SelectedFood}" DisplayMemberPath="FoodName"/>
+                        <TextBlock Text="Tìm món (Gõ chữ)" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12" Foreground="#636E72"/>
+                        <Grid>
+                            <TextBox Width="110" Height="35" 
+                                     Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                     VerticalContentAlignment="Center" Padding="5,0,20,0"/>
+                            <TextBlock Text="🔍" Foreground="#A4B0BE" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,6,0" IsHitTestVisible="False"/>
+                        </Grid>
                     </StackPanel>
 
                     <StackPanel Margin="0,0,5,0">
-                        <TextBlock Text="SL" FontWeight="SemiBold" Margin="0,0,0,5"/>
-                        <TextBox Width="40" Height="35" Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" VerticalContentAlignment="Center"/>
+                        <TextBlock Text="Món ăn" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12" Foreground="#636E72"/>
+                        <ComboBox Width="120" Height="35" 
+                                    ItemsSource="{Binding FilteredFoods}" 
+                                    SelectedItem="{Binding SelectedFood, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    DisplayMemberPath="FoodName"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="0,0,5,0">
+                        <TextBlock Text="SL" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12" Foreground="#636E72"/>
+                        <TextBox Width="40" Height="35" Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" VerticalContentAlignment="Center"/>
                     </StackPanel>
 
                     <Button Content="THÊM" Command="{Binding AddFoodCommand}" Width="55" Height="35" Margin="0,20,4,0" Background="#0984E3" Foreground="White" FontWeight="Bold">
@@ -175,7 +189,8 @@
                 </StackPanel>
 
                 <DataGrid x:Name="dgOrderBill" Grid.Row="2" 
-                          ItemsSource="{Binding BillDetails}" 
+                          ItemsSource="{Binding BillDetails}"
+                          SelectedItem="{Binding SelectedBillDetail, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                           AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
                           Background="White" BorderThickness="1" BorderBrush="#DFE6E9"
                           GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F1F2F6">

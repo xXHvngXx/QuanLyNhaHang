@@ -13,7 +13,7 @@
         <Storyboard x:Key="MasterLoadingAnim">
             <DoubleAnimation Storyboard.TargetProperty="Width"
                              Storyboard.TargetName="ProgressRect"
-                             From="0" To="300" Duration="0:0:2.5">
+                             From="0" To="310" Duration="0:0:2.0">
                 <DoubleAnimation.EasingFunction>
                     <PowerEase Power="3" EasingMode="EaseInOut"/>
                 </DoubleAnimation.EasingFunction>
@@ -21,15 +21,56 @@
 
             <StringAnimationUsingKeyFrames Storyboard.TargetProperty="Text" Storyboard.TargetName="TxtPercent">
                 <DiscreteStringKeyFrame Value="0%" KeyTime="0:0:0" />
-                <DiscreteStringKeyFrame Value="15%" KeyTime="0:0:0.5" />
-                <DiscreteStringKeyFrame Value="42%" KeyTime="0:0:1.2" />
-                <DiscreteStringKeyFrame Value="78%" KeyTime="0:0:1.8" />
-                <DiscreteStringKeyFrame Value="91%" KeyTime="0:0:2.2" />
-                <DiscreteStringKeyFrame Value="100%" KeyTime="0:0:2.5" />
+                <DiscreteStringKeyFrame Value="3%" KeyTime="0:0:0.1" />
+                <DiscreteStringKeyFrame Value="7%" KeyTime="0:0:0.2" />
+                <DiscreteStringKeyFrame Value="12%" KeyTime="0:0:0.3" />
+                <DiscreteStringKeyFrame Value="16%" KeyTime="0:0:0.4" />
+                <DiscreteStringKeyFrame Value="20%" KeyTime="0:0:0.5" />
+
+                <DiscreteStringKeyFrame Value="25%" KeyTime="0:0:0.6" />
+                <DiscreteStringKeyFrame Value="31%" KeyTime="0:0:0.7" />
+                <DiscreteStringKeyFrame Value="38%" KeyTime="0:0:0.8" />
+                <DiscreteStringKeyFrame Value="44%" KeyTime="0:0:0.9" />
+                <DiscreteStringKeyFrame Value="50%" KeyTime="0:0:1.0" />
+                <DiscreteStringKeyFrame Value="55%" KeyTime="0:0:1.1" />
+                <DiscreteStringKeyFrame Value="60%" KeyTime="0:0:1.2" />
+
+                <DiscreteStringKeyFrame Value="66%" KeyTime="0:0:1.3" />
+                <DiscreteStringKeyFrame Value="72%" KeyTime="0:0:1.4" />
+                <DiscreteStringKeyFrame Value="78%" KeyTime="0:0:1.5" />
+                <DiscreteStringKeyFrame Value="83%" KeyTime="0:0:1.6" />
+                <DiscreteStringKeyFrame Value="87%" KeyTime="0:0:1.7" />
+                <DiscreteStringKeyFrame Value="90%" KeyTime="0:0:1.8" />
+
+                <DiscreteStringKeyFrame Value="95%" KeyTime="0:0:1.9" />
+                <DiscreteStringKeyFrame Value="100%" KeyTime="0:0:2.0" />
             </StringAnimationUsingKeyFrames>
 
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="LoadingBarGroup"
+                             From="1" To="0" BeginTime="0:0:2.0" Duration="0:0:0.15"/>
+
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="TxtInitializing"
+                             From="1" To="0" BeginTime="0:0:2.0" Duration="0:0:0.15"/>
+
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="SuccessMarkGrid"
+                             From="0" To="1" BeginTime="0:0:2.0" Duration="0:0:0.2"/>
+
+            <DoubleAnimation Storyboard.TargetProperty="(Grid.RenderTransform).(ScaleTransform.ScaleX)" Storyboard.TargetName="SuccessMarkGrid"
+                             From="0.4" To="1" BeginTime="0:0:2.0" Duration="0:0:0.3">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase Amplitude="0.3" EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
+            <DoubleAnimation Storyboard.TargetProperty="(Grid.RenderTransform).(ScaleTransform.ScaleY)" Storyboard.TargetName="SuccessMarkGrid"
+                             From="0.4" To="1" BeginTime="0:0:2.0" Duration="0:0:0.3">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase Amplitude="0.3" EasingMode="EaseOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
             <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="MainBorder"
-                             From="1" To="0" BeginTime="0:0:2.7" Duration="0:0:0.3"/>
+                             From="1" To="0" BeginTime="0:0:3.6" Duration="0:0:0.4"/>
         </Storyboard>
     </Window.Resources>
 
@@ -40,49 +81,80 @@
     </Window.Triggers>
 
     <Grid>
-        <Border x:Name="MainBorder" Background="White" CornerRadius="25" Width="450" Height="220">
+        <Border x:Name="MainBorder" Background="#FFFFFF" CornerRadius="16" Width="450" Height="220">
             <Border.Effect>
-                <DropShadowEffect BlurRadius="40" ShadowDepth="0" Opacity="0.15" Color="#2d3436"/>
+                <DropShadowEffect BlurRadius="25" ShadowDepth="1" Opacity="0.05" Color="#334155"/>
             </Border.Effect>
 
             <Grid>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock FontSize="28" FontWeight="Black" HorizontalAlignment="Center" Margin="0,0,0,25">
+
+                    <TextBlock FontSize="38" FontWeight="Black" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,0,0,15">
                         <TextBlock.Foreground>
-                            <LinearGradientBrush EndPoint="1,1" StartPoint="0,0">
-                                <GradientStop Color="#2d3436" Offset="0"/>
-                                <GradientStop Color="#0984e3" Offset="1"/>
+                            <LinearGradientBrush EndPoint="1,0" StartPoint="0,0">
+                                <GradientStop Color="#334155" Offset="0"/>
+                                <GradientStop Color="#475569" Offset="1"/>
                             </LinearGradientBrush>
                         </TextBlock.Foreground>
-                        RESTAURANT <Run Foreground="#0984e3">MASTER</Run>
+                        RESTAURANT
+                        <LineBreak/>
+                        <Run Foreground="#475569" FontSize="14" FontWeight="SemiBold">MANAGEMENT SYSTEM</Run>
                     </TextBlock>
 
-                    <StackPanel Width="310">
-                        <TextBlock x:Name="TxtPercent" Text="0%" HorizontalAlignment="Center" 
-                                   Foreground="#2d3436" FontSize="22" FontWeight="Bold" Margin="0,0,0,12"/>
+                    <Grid Height="65">
 
-                        <Grid Height="12">
-                            <Border Background="#f1f2f6" CornerRadius="6"/>
-                            <Rectangle x:Name="ProgressRect" Width="0" HorizontalAlignment="Left" RadiusX="6" RadiusY="6">
-                                <Rectangle.Fill>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#74b9ff" Offset="0"/>
-                                        <GradientStop Color="#0984e3" Offset="1"/>
+                        <StackPanel x:Name="LoadingBarGroup" Width="310" VerticalAlignment="Center" Opacity="1">
+                            <TextBlock x:Name="TxtPercent" Text="0%" HorizontalAlignment="Center" 
+                                       Foreground="#475569" FontSize="15" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                            <Grid Height="6">
+                                <Border Background="#F1F5F9" CornerRadius="3"/>
+                                <Rectangle x:Name="ProgressRect" Width="0" HorizontalAlignment="Left" RadiusX="3" RadiusY="3">
+                                    <Rectangle.Fill>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#94A3B8" Offset="0"/>
+                                            <GradientStop Color="#475569" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+                            </Grid>
+                        </StackPanel>
+
+                        <Grid x:Name="SuccessMarkGrid" Width="44" Height="44" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform>
+                                <ScaleTransform ScaleX="0.4" ScaleY="0.4"/>
+                            </Grid.RenderTransform>
+
+                            <Ellipse>
+                                <Ellipse.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#14B8A6" Offset="0"/>
+                                        <GradientStop Color="#0F766E" Offset="1"/>
                                     </LinearGradientBrush>
-                                </Rectangle.Fill>
-                            </Rectangle>
-                        </Grid>
-                    </StackPanel>
-                </StackPanel>
+                                </Ellipse.Fill>
+                            </Ellipse>
 
-                <TextBlock Text="INITIALIZING RESOURCES..." 
-                           VerticalAlignment="Bottom" 
-                           HorizontalAlignment="Center" 
-                           Margin="0,0,0,20" 
-                           Foreground="#b2bec3" 
-                           FontSize="10" 
-                           FontWeight="SemiBold"
-                           FontStretch="Expanded"/>
+                            <Viewbox Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Path Data="M2,7 L6,11 L14,2" 
+                                        Stroke="White" 
+                                        StrokeThickness="2.5" 
+                                        StrokeStartLineCap="Round" 
+                                        StrokeEndLineCap="Round" 
+                                        StrokeLineJoin="Round"/>
+                            </Viewbox>
+                        </Grid>
+
+                    </Grid>
+
+                    <TextBlock x:Name="TxtInitializing"
+                               Text="INITIALIZING RESOURCES..." 
+                               HorizontalAlignment="Center" 
+                               Margin="0,15,0,0" 
+                               Foreground="#94A3B8" 
+                               FontSize="9" 
+                               FontWeight="Bold"/>
+
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>
