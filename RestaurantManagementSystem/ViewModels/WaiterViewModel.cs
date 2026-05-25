@@ -13,6 +13,21 @@ namespace RestaurantManagementSystem.ViewModels
     {
         private readonly IMessageService _messageService;
 
+        private ObservableCollection<DataRowView> _allTablesBackup;
+
+        private string _searchTableText;
+        public string SearchTableText
+        {
+            get => _searchTableText;
+            set
+            {
+                if (SetProperty(ref _searchTableText, value))
+                {
+                    ApplyTableFilter(); 
+                }
+            }
+        }
+
         private bool _isAutomatedSelection = false;
 
         #region Properties
@@ -141,26 +156,77 @@ namespace RestaurantManagementSystem.ViewModels
         {
             try
             {
+                // Reset các ô nhập liệu và tìm kiếm về rỗng/mặc định
+                _searchTableText = string.Empty;
+                OnPropertyChanged(nameof(SearchTableText));
+
+                _searchText = string.Empty;
+                OnPropertyChanged(nameof(SearchText));
+
+                Quantity = "1"; // Trả số lượng order về 1
+                OnPropertyChanged(nameof(Quantity));
+
+                // Reset các vùng chọn món ăn (Combobox danh mục và món ăn)
+                SelectedCategoryId = null;
+                SelectedCategory = null;
+                SelectedFood = null;
+                FilteredFoods = new ObservableCollection<DataRowView>(); // Xóa sạch danh sách món ăn đang lọc
+
+                // Tải lại dữ liệu từ cơ sở dữ liệu
                 int savedTableId = SelectedTable != null ? Convert.ToInt32(SelectedTable["TableID"]) : -1;
 
                 DataTable dtTable = DataProvider.Instance.ExecuteQuery("EXEC USP_GetTableList");
-                Tables = ConvertDataTableToCollection(dtTable);
+
+                // Lưu vào bộ nhớ tạm để không bị mất danh sách gốc khi tìm kiếm
+                _allTablesBackup = ConvertDataTableToCollection(dtTable);
+
+                // Chạy hàm lọc để đổ dữ liệu bàn ra màn hình
+                ApplyTableFilter();
 
                 DataTable dtCategory = DataProvider.Instance.ExecuteQuery("SELECT * FROM dbo.Category");
                 Categories = ConvertDataTableToCollection(dtCategory);
 
-                if (savedTableId != -1)
+                if (savedTableId != -1 && _allTablesBackup != null)
                 {
-                    SelectedTable = Tables.FirstOrDefault(t => Convert.ToInt32(t["TableID"]) == savedTableId);
+                    // Giữ lại trạng thái bàn đang chọn trước khi bấm refresh
+                    SelectedTable = _allTablesBackup.FirstOrDefault(t => Convert.ToInt32(t["TableID"]) == savedTableId);
                 }
 
+                // Báo giao diện cập nhật lại toàn bộ thông tin
                 OnPropertyChanged(nameof(Tables));
                 OnPropertyChanged(nameof(Categories));
+                OnPropertyChanged(nameof(FilteredFoods));
             }
             catch (Exception ex)
             {
                 _messageService.ShowError("Lỗi hệ thống", ex.Message);
             }
+        }
+
+        private void ApplyTableFilter()
+        {
+            if (_allTablesBackup == null) return;
+
+            // Chuyển chữ tìm kiếm về dạng chữ thường để không phân biệt Hoa/Thường
+            string textSearch = string.IsNullOrWhiteSpace(SearchTableText) ? "" : SearchTableText.ToLower().Trim();
+
+            if (string.IsNullOrEmpty(textSearch))
+            {
+                // Nếu ô tìm kiếm trống, hiển thị lại toàn bộ bàn
+                Tables = new ObservableCollection<DataRowView>(_allTablesBackup);
+            }
+            else
+            {
+                // Lọc các bàn có tên chứa ký tự nhập vào
+                var filtered = _allTablesBackup.Where(t =>
+                    t["TableName"] != null &&
+                    t["TableName"].ToString().ToLower().Contains(textSearch)
+                ).ToList();
+
+                Tables = new ObservableCollection<DataRowView>(filtered);
+            }
+
+            OnPropertyChanged(nameof(Tables));
         }
 
         void LoadFoodByCategory()

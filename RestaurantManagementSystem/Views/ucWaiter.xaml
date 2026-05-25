@@ -6,6 +6,107 @@
              mc:Ignorable="d"
              Background="Transparent">
 
+    <UserControl.Resources>
+        <Style x:Key="waitercombostyle" TargetType="ComboBox">
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="0,0,18,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton Name="ToggleButton" 
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          Background="{TemplateBinding Background}"
+                                          Focusable="false"
+                                          IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                          ClickMode="Press"/>
+
+                            <ContentPresenter Name="ContentSite" 
+                                              IsHitTestVisible="False" 
+                                              Content="{TemplateBinding SelectionBoxItem}"
+                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                              Margin="5,3,18,3" 
+                                              VerticalAlignment="Center" 
+                                              HorizontalAlignment="Center"/>
+
+                            <TextBlock x:Name="PlaceholderTextBlock" 
+                                       Text="{TemplateBinding Tag}" 
+                                       Foreground="#888888" 
+                                       FontStyle="Italic"
+                                       IsHitTestVisible="False" 
+                                       Margin="5,3,18,3"
+                                       VerticalAlignment="Center" 
+                                       HorizontalAlignment="Center"
+                                       Visibility="Hidden"/>
+
+                            <Popup Name="Popup" 
+                                   Placement="Bottom" 
+                                   IsOpen="{TemplateBinding IsDropDownOpen}" 
+                                   AllowsTransparency="True" 
+                                   Focusable="False" 
+                                   PopupAnimation="Slide">
+                                <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="LightGray"/>
+                                    <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasItems" Value="false">
+                                <Setter TargetName="DropDownBorder" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="SelectedIndex" Value="-1">
+                                <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PlaceholderTextBoxStyle" TargetType="TextBox">
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <Border x:Name="BaseBorder" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" 
+                                    Background="{TemplateBinding Background}" 
+                                    CornerRadius="5">
+                                <ScrollViewer x:Name="PART_ContentHost" Margin="2,0,2,0" VerticalAlignment="Center"/>
+                            </Border>
+
+                            <TextBlock x:Name="txtPlaceholder" 
+                                       Text="{TemplateBinding Tag}" 
+                                       Foreground="#A4B0BE" 
+                                       FontStyle="Italic"
+                                       VerticalAlignment="Center" 
+                                       HorizontalAlignment="Center" 
+                                       IsHitTestVisible="False" 
+                                       Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding Text, RelativeSource={RelativeSource Self}}" Value=""/>
+                                    <Condition Binding="{Binding IsFocused, RelativeSource={RelativeSource Self}}" Value="False"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="txtPlaceholder" Property="Visibility" Value="Visible"/>
+                            </MultiDataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <Grid Margin="10">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="4*"/>
@@ -19,12 +120,24 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Row="0" Text="ĐỊNH VỊ BÀN" FontSize="18" FontWeight="Bold" Foreground="#2D3436" Margin="0,0,0,10"/>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,10,0,10">
+                <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <TextBox Height="35" 
+                             Style="{StaticResource PlaceholderTextBoxStyle}"
+                             Tag="Tìm kiếm bàn..."
+                             Text="{Binding SearchTableText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             Padding="10,0,30,0"
+                             BorderBrush="#DFE6E9"
+                             Background="#F8F9FA"/>
+                    <TextBlock Foreground="#A4B0BE" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0" IsHitTestVisible="False"/>
+                </Grid>
+
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,10,0,10">
                     <ListBox x:Name="icTables" 
                              ItemsSource="{Binding Tables}" 
                              SelectedItem="{Binding SelectedTable, Mode=TwoWay}"
@@ -123,36 +236,41 @@
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,15">
-                    <StackPanel Margin="0,0,5,0">
-                        <TextBlock Text="Danh mục" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12" Foreground="#636E72"/>
-                        <ComboBox Width="110" Height="35" 
-                                    ItemsSource="{Binding Categories}" 
-                                    SelectedValue="{Binding SelectedCategoryId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    SelectedValuePath="CategoryID"
-                                    DisplayMemberPath="CategoryName" />
+                    <StackPanel Margin="0,20,5,0">
+                        <ComboBox Width="135" Height="35" 
+                                  Style="{StaticResource waitercombostyle}"
+                                  Tag="Chọn Danh Mục"
+                                  ItemsSource="{Binding Categories}" 
+                                  SelectedValue="{Binding SelectedCategoryId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  SelectedValuePath="CategoryID"
+                                  DisplayMemberPath="CategoryName" />
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,5,0">
-                        <TextBlock Text="Tìm món (Gõ chữ)" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12" Foreground="#636E72"/>
+                    <StackPanel Margin="0,20,5,0">
                         <Grid>
-                            <TextBox Width="110" Height="35" 
+                            <TextBox Width="125" Height="35" 
+                                     Style="{StaticResource PlaceholderTextBoxStyle}"
+                                     Tag="Tìm món (Gõ chữ)"
                                      Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                     VerticalContentAlignment="Center" Padding="5,0,20,0"/>
-                            <TextBlock Text="🔍" Foreground="#A4B0BE" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,6,0" IsHitTestVisible="False"/>
+                                     Padding="5,0,22,0"/>
+                            <TextBlock Foreground="#A4B0BE" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,8,0" IsHitTestVisible="False"/>
                         </Grid>
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,5,0">
-                        <TextBlock Text="Món ăn" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12" Foreground="#636E72"/>
-                        <ComboBox Width="120" Height="35" 
-                                    ItemsSource="{Binding FilteredFoods}" 
-                                    SelectedItem="{Binding SelectedFood, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                    DisplayMemberPath="FoodName"/>
+                    <StackPanel Margin="0,20,5,0">
+                        <ComboBox Width="135" Height="35" 
+                                  Style="{StaticResource waitercombostyle}"
+                                  Tag="Chọn Món Ăn"
+                                  ItemsSource="{Binding FilteredFoods}" 
+                                  SelectedItem="{Binding SelectedFood, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                  DisplayMemberPath="FoodName"/>
                     </StackPanel>
 
-                    <StackPanel Margin="0,0,5,0">
-                        <TextBlock Text="SL" FontWeight="SemiBold" Margin="0,0,0,5" FontSize="12" Foreground="#636E72"/>
-                        <TextBox Width="40" Height="35" Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextAlignment="Center" VerticalContentAlignment="Center"/>
+                    <StackPanel Margin="0,20,5,0">
+                        <TextBox Width="45" Height="35" 
+                                 Style="{StaticResource PlaceholderTextBoxStyle}"
+                                 Tag="SL"
+                                 Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
 
                     <Button Content="THÊM" Command="{Binding AddFoodCommand}" Width="55" Height="35" Margin="0,20,4,0" Background="#0984E3" Foreground="White" FontWeight="Bold">

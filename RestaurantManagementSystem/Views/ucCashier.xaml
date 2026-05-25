@@ -8,6 +8,66 @@
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <Style x:Key="placeholdercombostyle" TargetType="ComboBox">
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton Name="ToggleButton" 
+                                      BorderBrush="{TemplateBinding BorderBrush}"
+                                      Background="{TemplateBinding Background}"
+                                      Focusable="false"
+                                      IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                      ClickMode="Press"/>
+
+                            <ContentPresenter Name="ContentSite" 
+                                          IsHitTestVisible="False" 
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                          ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                          Margin="10,3,23,3" 
+                                          VerticalAlignment="Center" 
+                                          HorizontalAlignment="Left"/>
+
+                            <TextBlock x:Name="PlaceholderTextBlock" 
+                                   Text="{TemplateBinding Tag}" 
+                                   Foreground="#888888" 
+                                   FontStyle="Italic"
+                                   IsHitTestVisible="False" 
+                                   Margin="10,3,23,3"
+                                   VerticalAlignment="Center" 
+                                   HorizontalAlignment="Left"
+                                   Visibility="Hidden"/>
+
+                            <Popup Name="Popup" 
+                               Placement="Bottom" 
+                               IsOpen="{TemplateBinding IsDropDownOpen}" 
+                               AllowsTransparency="True" 
+                               Focusable="False" 
+                               PopupAnimation="Slide">
+                                <Grid Name="DropDown" SnapsToDevicePixels="True" MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                                    <Border x:Name="DropDownBorder" Background="White" BorderThickness="1" BorderBrush="LightGray"/>
+                                    <ScrollViewer Margin="4,6,4,6" SnapsToDevicePixels="True">
+                                        <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasItems" Value="false">
+                                <Setter TargetName="DropDownBorder" Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                            <Trigger Property="SelectedIndex" Value="-1">
+                                <Setter TargetName="PlaceholderTextBlock" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <i:Interaction.Triggers>
@@ -27,14 +87,49 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
+                
                 <StackPanel Grid.Row="0" Margin="5,0,0,10">
                     <TextBlock Text="🍽 DANH SÁCH BÀN" Foreground="White" FontSize="16" FontWeight="Bold"/>
                     <Rectangle Height="1" Fill="#57606F" Margin="0,5,0,0"/>
                 </StackPanel>
 
-                <ListBox Grid.Row="1" ItemsSource="{Binding Tables}" SelectedItem="{Binding SelectedTable}"
+                <Grid Grid.Row="1" Margin="5,0,5,10">
+                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+                             Height="35" 
+                             Background="#353B48" 
+                             Foreground="White" 
+                             BorderThickness="1" 
+                             BorderBrush="#718093"
+                             Padding="10,5,10,5" 
+                             VerticalContentAlignment="Center"/>
+                    
+                    <TextBlock Text="🔍 Nhập tên bàn cần tìm..." 
+                               Foreground="#A5B1C2" 
+                               IsHitTestVisible="False"
+                               VerticalAlignment="Center" 
+                               Margin="15,0,0,0" 
+                               FontSize="13" 
+                               FontStyle="Italic">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SearchText}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SearchText}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+
+                <ListBox Grid.Row="2" ItemsSource="{Binding FilteredTables}" SelectedItem="{Binding SelectedTable}"
                          Background="Transparent" BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -92,9 +187,47 @@
         <Border Grid.Column="2" Background="#F8F9FA" CornerRadius="15" Padding="15" Margin="5">
             <StackPanel>
                 <TextBlock Text="🛠 ĐIỀU CHỈNH" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
                 <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" 
-                          DisplayMemberPath="CategoryName" Height="35" Margin="0,5"/>
-                <ComboBox ItemsSource="{Binding Foods}" SelectedItem="{Binding SelectedFood}" 
+                          DisplayMemberPath="CategoryName" 
+                          Style="{StaticResource placeholdercombostyle}"
+                          Tag="--- Chọn Danh mục ---"
+                          Height="35" Margin="0,5"/>
+
+                <Grid Margin="0,5">
+                    <TextBox Text="{Binding SearchFoodText, UpdateSourceTrigger=PropertyChanged}" 
+                             Height="35" 
+                             Background="White" 
+                             Foreground="#2D3436" 
+                             BorderThickness="1" 
+                             BorderBrush="#718093"
+                             Padding="10,5,10,5" 
+                             VerticalContentAlignment="Center"/>
+                    <TextBlock Text="🔍 Nhập tên món cần tìm..." 
+                               Foreground="#A5B1C2" 
+                               IsHitTestVisible="False"
+                               VerticalAlignment="Center" 
+                               Margin="15,0,0,0" 
+                               FontSize="13" 
+                               FontStyle="Italic">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SearchFoodText}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding SearchFoodText}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+                <ComboBox ItemsSource="{Binding Foods}" SelectedItem="{Binding SelectedFood}"
+                          Style="{StaticResource placeholdercombostyle}"
+                          Tag="--- Chọn Món Ăn ---"
                           DisplayMemberPath="FoodName" Height="35" Margin="0,5"/>
 
                 <Grid Margin="0,10">
@@ -118,9 +251,9 @@
                 <TextBlock Text="{Binding TotalAmount, StringFormat={}{0:N0} VNĐ}" FontSize="24" FontWeight="Bold" Foreground="#E84118"/>
 
                 <Button Content="XEM BILL &amp; IN" 
-                    Command="{Binding PrintBillCommand}" 
-                    Height="40" Margin="0,10" 
-                    Background="#9C88FF" Foreground="White" BorderThickness="0"/>
+                        Command="{Binding PrintBillCommand}" 
+                        Height="40" Margin="0,10" 
+                        Background="#9C88FF" Foreground="White" BorderThickness="0"/>
             </StackPanel>
         </Border>
 

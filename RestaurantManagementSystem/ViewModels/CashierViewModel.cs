@@ -23,6 +23,37 @@ namespace RestaurantManagementSystem.ViewModels
         private DataView _tables;
         public DataView Tables { get => _tables; set => SetProperty(ref _tables, value); }
 
+        // Bộ lọc tìm kiếm danh sách bàn thời gian thực
+        private string _searchText = "";
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    ApplyTableFilter();
+                }
+            }
+        }
+
+        private string _searchFoodText = "";
+        public string SearchFoodText
+        {
+            get => _searchFoodText;
+            set
+            {
+                if (SetProperty(ref _searchFoodText, value))
+                {
+                    ApplyFoodFilter();
+                }
+            }
+        }
+
+        // Nguồn dữ liệu đã lọc liên kết trực tiếp với ListBox Bàn trên giao diện
+        private DataView _filteredTables;
+        public DataView FilteredTables { get => _filteredTables; set => SetProperty(ref _filteredTables, value); }
+
         private DataView _categories;
         public DataView Categories { get => _categories; set => SetProperty(ref _categories, value); }
 
@@ -31,6 +62,9 @@ namespace RestaurantManagementSystem.ViewModels
 
         private DataView _billDetails;
         public DataView BillDetails { get => _billDetails; set => SetProperty(ref _billDetails, value); }
+
+        private decimal _subTotal;
+        public decimal SubTotal { get => _subTotal; set => SetProperty(ref _subTotal, value); }
 
         private decimal _totalAmount;
         public decimal TotalAmount { get => _totalAmount; set => SetProperty(ref _totalAmount, value); }
@@ -67,7 +101,39 @@ namespace RestaurantManagementSystem.ViewModels
             set
             {
                 if (SetProperty(ref _selectedBillDetail, value) && value != null)
+                {
                     Quantity = Convert.ToInt32(value["Quantity"]);
+
+                    // ĐỒNG BỘ NGƯỢC VỀ COMBOBOX DANH MỤC (CATEGORY)
+                    if (Categories != null && value.Row.Table.Columns.Contains("CategoryID"))
+                    {
+                        int targetCategoryId = Convert.ToInt32(value["CategoryID"]);
+
+                        foreach (DataRowView categoryRow in Categories)
+                        {
+                            if (Convert.ToInt32(categoryRow["CategoryID"]) == targetCategoryId)
+                            {
+                                SelectedCategory = categoryRow;
+                                break;
+                            }
+                        }
+                    }
+
+                    // ĐỒNG BỘ NGƯỢC VỀ COMBOBOX MÓN ĂN (FOOD)
+                    if (Foods != null && value.Row.Table.Columns.Contains("FoodID"))
+                    {
+                        int targetFoodId = Convert.ToInt32(value["FoodID"]);
+
+                        foreach (DataRowView foodRow in Foods)
+                        {
+                            if (Convert.ToInt32(foodRow["FoodID"]) == targetFoodId)
+                            {
+                                SelectedFood = foodRow;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -123,30 +189,112 @@ namespace RestaurantManagementSystem.ViewModels
         #region Data Loading Logic
         void LoadTables()
         {
+            // Bảo lưu ID bàn đang chọn trước khi làm mới dữ liệu từ Database
             int savedTableId = SelectedTable != null ? Convert.ToInt32(SelectedTable["TableID"]) : -1;
 
-            Tables = DataProvider.Instance.ExecuteQuery("EXEC USP_GetTableList").DefaultView;
+            DataTable dt = DataProvider.Instance.ExecuteQuery("EXEC USP_GetTableList");
+            Tables = dt.DefaultView;
 
+            // Đồng bộ dữ liệu hiển thị cho FilteredTables của thanh tìm kiếm
+            FilteredTables = new DataView(dt);
+
+            ApplyTableFilter();
+
+            // Khôi phục lại trạng thái chọn bàn mà không làm mất liên kết giao diện
             if (savedTableId != -1)
             {
-                foreach (DataRowView row in Tables)
+                foreach (DataRowView row in FilteredTables)
                 {
                     if (Convert.ToInt32(row["TableID"]) == savedTableId)
                     {
-                        SelectedTable = row;
-                        break;
+                        _selectedTable = row;
+                        OnPropertyChanged(nameof(SelectedTable));
+                        LoadBill(savedTableId); // Tải lại chi tiết hóa đơn
+                        return;
                     }
                 }
             }
+
+            ResetBillStateOnly();
         }
 
-        void LoadCategories() => Categories = DataProvider.Instance.ExecuteQuery("EXEC USP_GetCategoryList").DefaultView;
+        private void ApplyTableFilter()
+        {
+            if (FilteredTables == null) return;
 
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                FilteredTables.RowFilter = string.Empty;
+            }
+            else
+            {
+                FilteredTables.RowFilter = string.Format("TableName LIKE '%{0}%'", SearchText.Replace("'", "''"));
+            }
+        }
+
+        private DataTable _allFoodsCache;
+
+        void LoadCategories()
+        {
+            // Tải danh mục
+            Categories = DataProvider.Instance.ExecuteQuery("EXEC USP_GetCategoryList").DefaultView;
+
+            // Tải trước TOÀN BỘ món ăn vào bộ nhớ đệm một lần duy nhất 
+            _allFoodsCache = DataProvider.Instance.ExecuteQuery("SELECT * FROM dbo.Food");
+        }
         void OnCategorySelected()
         {
-            int id = Convert.ToInt32(SelectedCategory["CategoryID"]);
-            Foods = DataProvider.Instance.ExecuteQuery("EXEC USP_GetFoodByCategoryID @idCategory", new object[] { id }).DefaultView;
+            
+            _searchFoodText = string.Empty;
+            OnPropertyChanged(nameof(SearchFoodText));
+
+            if (SelectedCategory != null && _allFoodsCache != null)
+            {
+                int id = Convert.ToInt32(SelectedCategory["CategoryID"]);
+
+                // Lọc offline từ bộ nhớ đệm
+                DataView dv = new DataView(_allFoodsCache);
+                dv.RowFilter = $"CategoryID = {id}";
+                Foods = dv;
+            }
             SelectedFood = null;
+        }
+        private void ApplyFoodFilter()
+        {
+            if (_allFoodsCache == null)
+            {
+                _allFoodsCache = DataProvider.Instance.ExecuteQuery("SELECT * FROM dbo.Food");
+            }
+
+            string textSearch = string.IsNullOrWhiteSpace(SearchFoodText) ? "" : SearchFoodText.Trim();
+
+            // Ô tìm kiếm món có chữ -> Lọc offline toàn chuỗi trên RAM
+            if (!string.IsNullOrEmpty(textSearch))
+            {
+                DataView dvAll = new DataView(_allFoodsCache);
+                dvAll.RowFilter = string.Format("FoodName LIKE '%{0}%'", textSearch.Replace("'", "''"));
+                Foods = dvAll;
+
+                if (Foods.Count == 1)
+                {
+                    SelectedFood = Foods[0];
+                }
+            }
+            // Ô tìm kiếm trống -> Trả lại hiển thị danh sách món theo Danh mục đang chọn
+            else if (SelectedCategory != null)
+            {
+                DataView dvCat = new DataView(_allFoodsCache);
+                int id = Convert.ToInt32(SelectedCategory["CategoryID"]);
+                dvCat.RowFilter = $"CategoryID = {id}";
+                Foods = dvCat;
+                SelectedFood = null;
+            }
+            // Không có danh mục lẫn từ khóa tìm kiếm
+            else
+            {
+                Foods = null;
+                SelectedFood = null;
+            }
         }
 
         void OnTableSelected() => LoadBill(Convert.ToInt32(SelectedTable["TableID"]));
@@ -160,13 +308,19 @@ namespace RestaurantManagementSystem.ViewModels
                 CurrentBillId = Convert.ToInt32(dtBill.Rows[0]["BillID"]);
                 BillDetails = DataProvider.Instance.ExecuteQuery("EXEC USP_GetBillDetailsByBillID @idBill", new object[] { CurrentBillId }).DefaultView;
 
+                // Tính toán số tiền món gốc
                 decimal sum = 0;
                 foreach (DataRowView row in BillDetails) sum += Convert.ToDecimal(row["Total"]);
-                TotalAmount = sum;
+                SubTotal = sum;
+
+                // Áp dụng công thức tính toán lũy tiến bảo toàn tài chính: +5% phí DV, +8% Thuế VAT
+                decimal withServiceCharge = SubTotal * 1.05m;
+                TotalAmount = Math.Round(withServiceCharge * 1.08m, 0);
             }
             else
             {
                 BillDetails = null;
+                SubTotal = 0;
                 TotalAmount = 0;
                 CurrentBillId = 0;
             }
@@ -209,26 +363,20 @@ namespace RestaurantManagementSystem.ViewModels
 
         private void ExecuteDeleteFood()
         {
-            // Kiểm tra xem đã chọn bàn và món chưa
             if (SelectedTable == null || SelectedBillDetail == null) return;
 
             if (!_messageService.ShowConfirm("Xác nhận", "Bạn có chắc chắn muốn xóa món này khỏi hóa đơn?")) return;
 
             try
             {
-                // Lấy thông tin cần thiết
                 int tableId = Convert.ToInt32(SelectedTable["TableID"]);
                 int foodId = Convert.ToInt32(SelectedBillDetail["FoodID"]);
-
                 string currentUser = AccountDAL.LoginAccount["UserName"].ToString();
 
                 string query = "EXEC USP_DeleteBillInfoByTable @idTable , @idFood , @userName";
-
                 DataProvider.Instance.ExecuteNonQuery(query, new object[] { tableId, foodId, currentUser });
 
-                // Cập nhật lại giao diện
-                LoadBill(tableId);    
-                LoadTables();  
+                LoadTables();
             }
             catch (Exception ex)
             {
@@ -244,10 +392,7 @@ namespace RestaurantManagementSystem.ViewModels
             {
                 int tableId = Convert.ToInt32(SelectedTable["TableID"]);
                 string tableName = SelectedTable["TableName"].ToString();
-
-                string currentUserName = (AccountDAL.LoginAccount != null)
-                    ? AccountDAL.LoginAccount["UserName"].ToString()
-                    : "Admin";
+                string currentUserName = (AccountDAL.LoginAccount != null) ? AccountDAL.LoginAccount["UserName"].ToString() : "Admin";
 
                 DataProvider.Instance.ExecuteNonQuery(
                     "EXEC USP_UpdateBillInfoByTable @idBill , @idTable , @totalPrice , @userName",
@@ -256,8 +401,8 @@ namespace RestaurantManagementSystem.ViewModels
 
                 _messageService.ShowInfo("Thành công", "Đã thanh toán cho " + tableName);
 
-                ResetBillState();
-                LoadTables(); // Load lại để bàn đổi từ Đỏ sang Xanh
+                ResetAllStateAfterPay();
+                LoadTables();
             }
             catch (Exception ex)
             {
@@ -265,12 +410,23 @@ namespace RestaurantManagementSystem.ViewModels
             }
         }
 
-        private void ResetBillState()
+        private void ResetBillStateOnly()
         {
-            SelectedTable = null;
+            _selectedTable = null;
+            OnPropertyChanged(nameof(SelectedTable));
             CurrentBillId = 0;
             BillDetails = null;
+            SubTotal = 0;
             TotalAmount = 0;
+        }
+
+        private void ResetAllStateAfterPay()
+        {
+            ResetBillStateOnly();
+            SearchText = string.Empty;
+            SelectedCategory = null;
+            Foods = null;
+            SelectedFood = null;
         }
 
         private void ExecutePrintBill()
@@ -280,9 +436,9 @@ namespace RestaurantManagementSystem.ViewModels
                 string cashierName = AccountDAL.LoginAccount != null ? AccountDAL.LoginAccount["UserName"].ToString() : "Chưa xác định";
 
                 FixedDocument fixedDoc = new FixedDocument();
-                fixedDoc.DocumentPaginator.PageSize = new Size(400, 850);
+                fixedDoc.DocumentPaginator.PageSize = new Size(400, 920);
 
-                FixedPage page = new FixedPage() { Width = 400, Height = 850, Background = Brushes.White };
+                FixedPage page = new FixedPage() { Width = 400, Height = 920, Background = Brushes.White };
                 StackPanel container = new StackPanel() { Width = 360, Margin = new Thickness(20) };
 
                 // Header
@@ -308,12 +464,42 @@ namespace RestaurantManagementSystem.ViewModels
                     container.Children.Add(row);
                 }
 
-                // Footer
                 container.Children.Add(new Separator { Margin = new Thickness(0, 10, 0, 10) });
-                container.Children.Add(new TextBlock { Text = $"TỔNG CỘNG: {TotalAmount:N0} VNĐ", FontSize = 18, FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Right });
-                container.Children.Add(new TextBlock { Text = "Pass WiFi: NhaHangViet123", Margin = new Thickness(0, 20, 0, 5), HorizontalAlignment = HorizontalAlignment.Center, FontStyle = FontStyles.Italic });
 
-                // QR Code
+                // Tính toán thuế phí rõ ràng để in hóa đơn
+                decimal serviceCharge = Math.Round(SubTotal * 0.05m, 0);
+                decimal vatAmount = Math.Round((SubTotal + serviceCharge) * 0.08m, 0);
+
+                Grid rowSubTotal = new Grid() { Margin = new Thickness(0, 2, 0, 2) };
+                rowSubTotal.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(2, GridUnitType.Star) });
+                rowSubTotal.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+                rowSubTotal.Children.Add(new TextBlock { Text = "Cộng tiền món:", Foreground = Brushes.DimGray });
+                var txtSub = new TextBlock { Text = $"{SubTotal:N0}", HorizontalAlignment = HorizontalAlignment.Right, Foreground = Brushes.DimGray };
+                Grid.SetColumn(txtSub, 1); rowSubTotal.Children.Add(txtSub);
+                container.Children.Add(rowSubTotal);
+
+                Grid rowService = new Grid() { Margin = new Thickness(0, 2, 0, 2) };
+                rowService.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(2, GridUnitType.Star) });
+                rowService.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+                rowService.Children.Add(new TextBlock { Text = "Phí dịch vụ (5%):", Foreground = Brushes.DimGray });
+                var txtSvc = new TextBlock { Text = $"{serviceCharge:N0}", HorizontalAlignment = HorizontalAlignment.Right, Foreground = Brushes.DimGray };
+                Grid.SetColumn(txtSvc, 1); rowService.Children.Add(txtSvc);
+                container.Children.Add(rowService);
+
+                Grid rowVAT = new Grid() { Margin = new Thickness(0, 2, 0, 2) };
+                rowVAT.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(2, GridUnitType.Star) });
+                rowVAT.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) });
+                rowVAT.Children.Add(new TextBlock { Text = "Thuế VAT (8%):", Foreground = Brushes.DimGray });
+                var txtVat = new TextBlock { Text = $"{vatAmount:N0}", HorizontalAlignment = HorizontalAlignment.Right, Foreground = Brushes.DimGray };
+                Grid.SetColumn(txtVat, 1); rowVAT.Children.Add(txtVat);
+                container.Children.Add(rowVAT);
+
+                container.Children.Add(new Separator { Margin = new Thickness(0, 5, 0, 10) });
+
+                container.Children.Add(new TextBlock { Text = $"TỔNG CỘNG: {TotalAmount:N0} VNĐ", FontSize = 18, FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Right });
+                container.Children.Add(new TextBlock { Text = "Pass WiFi: NhaHangViet123", Margin = new Thickness(0, 15, 0, 5), HorizontalAlignment = HorizontalAlignment.Center, FontStyle = FontStyles.Italic });
+
+                // QR Code mã hóa chuỗi theo tổng giá trị cuối cùng
                 QRCodeGenerator qrGen = new QRCodeGenerator();
                 QRCodeData qrData = qrGen.CreateQrCode($"Thanh toan {SelectedTable["TableName"]} - {TotalAmount} VND", QRCodeGenerator.ECCLevel.Q);
                 PngByteQRCode qrCode = new PngByteQRCode(qrData);
@@ -340,6 +526,27 @@ namespace RestaurantManagementSystem.ViewModels
                 BillPreviewWindow preview = new BillPreviewWindow(fixedDoc);
                 if (preview.ShowDialog() == true)
                 {
+                    try
+                    {
+                        // KHÔNG CẦN KHAI BÁO LẠI 'cashierName' nữa, dùng luôn cái đã có ở đầu hàm
+
+                        string queryLog = @"INSERT INTO ShadowLog (BillID, TableName, ActionType, OldTotal, NewTotal, StaffName, LogTime) 
+                            VALUES (@BillID, @TableName, @ActionType, @OldTotal, @NewTotal, @StaffName, GETDATE())";
+
+                        DataProvider.Instance.ExecuteNonQuery(queryLog, new object[] {
+                                CurrentBillId,
+                                SelectedTable["TableName"],
+                                "PRINT_BILL",
+                                TotalAmount,                 
+                                0,                         
+                                cashierName
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Lỗi ghi log in bill: " + ex.Message);
+                    }
+
                     OnPrintSuccess?.Invoke();
                 }
             }
