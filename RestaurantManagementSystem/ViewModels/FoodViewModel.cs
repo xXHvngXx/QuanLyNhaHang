@@ -31,6 +31,7 @@ namespace RestaurantManagementSystem.ViewModels
                     SelectedCategoryID = _selectedFood["CategoryID"];
                     Price = _selectedFood["Price"].ToString();
                 }
+                CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -45,6 +46,20 @@ namespace RestaurantManagementSystem.ViewModels
 
         private string _price;
         public string Price { get => _price; set => SetProperty(ref _price, value); }
+
+        private string _searchText;
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    ApplyFilter();
+                }
+            }
+        }
+
         #endregion
 
         #region Commands
@@ -68,7 +83,10 @@ namespace RestaurantManagementSystem.ViewModels
 
             AddCommand = new RelayCommand<object>(
                 p => ExecuteAdd(),
-                p => !string.IsNullOrWhiteSpace(FoodName) && SelectedCategoryID != null && !string.IsNullOrWhiteSpace(Price)
+                p => !string.IsNullOrWhiteSpace(FoodName)
+                     && SelectedCategoryID != null
+                     && !string.IsNullOrWhiteSpace(Price)
+                     && SelectedFood == null 
             );
 
             EditCommand = new RelayCommand<object>(
@@ -89,26 +107,21 @@ namespace RestaurantManagementSystem.ViewModels
         {
             try
             {
-                // Load ComboBox Danh mục
+                SearchText = string.Empty;
                 CategoryList = CategoryBLL.Instance.GetCategories().DefaultView;
 
-                // Load DataGrid Món ăn
                 DataTable dt = FoodBLL.Instance.GetFoods();
                 if (dt != null)
                 {
                     DataView dv = dt.DefaultView;
                     dv.Sort = "FoodID ASC";
                     FoodList = dv;
-
-                    int nextId = dt.Rows.Count > 0
-                        ? dt.AsEnumerable().Max(r => Convert.ToInt32(r["FoodID"])) + 1
-                        : 1;
-                    FoodID = nextId.ToString();
+                    ApplyFilter();
                 }
 
-                // Reset form
+                FoodID = "0"; 
                 FoodName = string.Empty;
-                Price = "0"; 
+                Price = "0";
                 SelectedCategoryID = null;
                 SelectedFood = null;
             }
@@ -145,6 +158,19 @@ namespace RestaurantManagementSystem.ViewModels
                 string msg = FoodBLL.Instance.DeleteFood(FoodID);
                 _messageService.ShowInfo("Thông báo", msg);
                 RefreshData();
+            }
+        }
+        private void ApplyFilter()
+        {
+            if (FoodList == null) return;
+
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                FoodList.RowFilter = string.Empty;
+            }
+            else
+            {
+                FoodList.RowFilter = $"FoodName LIKE '%{SearchText.Replace("'", "''")}%'";
             }
         }
         #endregion

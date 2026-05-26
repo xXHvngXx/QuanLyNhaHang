@@ -4,6 +4,18 @@
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              Background="#F5F6FA">
 
+    <UserControl.Resources>
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Opacity" Value="1"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                    <Setter Property="Cursor" Value="No"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
             <i:InvokeCommandAction Command="{Binding LoadDataCommand}"/>
@@ -35,13 +47,17 @@
                           SelectedValue="{Binding SelectedCategoryID}"
                           DisplayMemberPath="CategoryName" 
                           SelectedValuePath="CategoryID"
-                          Height="35" Padding="10,8" Margin="0,0,0,15"/>
+                          Height="35" Padding="10,8" Margin="0,0,0,15"
+                          IsEditable="True" 
+                          IsReadOnly="True" 
+                          Text="-- Chọn danh mục --" 
+                          VerticalContentAlignment="Center"/>
 
                 <TextBlock Text="Giá tiền (VNĐ):" FontWeight="SemiBold" Foreground="#7F8C8D" Margin="0,0,0,5"/>
                 <TextBox x:Name="txtPrice" Text="{Binding Price, UpdateSourceTrigger=PropertyChanged}" Height="35" Padding="10,8" Margin="0,0,0,25"/>
 
                 <UniformGrid Columns="2" Rows="2" VerticalAlignment="Top">
-                    <Button Content="➕ Thêm" Command="{Binding AddCommand}" Height="40" Margin="0,0,5,5" Background="#27AE60" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                    <Button Content="➕ Thêm" Style="{StaticResource ActionButtonStyle}" Command="{Binding AddCommand}" Height="40" Margin="0,0,5,5" Background="#27AE60" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
                     <Button Content="✏️ Sửa" Command="{Binding EditCommand}" Height="40" Margin="5,0,0,5" Background="#2980B9" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
                     <Button Content="🗑️ Xóa" Command="{Binding DeleteCommand}" Height="40" Margin="0,5,5,0" Background="#E74C3C" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
                     <Button Content="🔄 Nhập lại" Command="{Binding ClearCommand}" Height="40" Margin="5,5,0,0" Background="#95A5A6" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
@@ -56,17 +72,41 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
                 <TextBlock Text="THỰC ĐƠN HIỆN TẠI" FontWeight="Bold" Foreground="#34495E" Margin="5,0,0,10"/>
 
-                <DataGrid x:Name="dgFood" 
-                          ItemsSource="{Binding FoodList}"
-                          SelectedItem="{Binding SelectedFood}"
-                          Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" 
-                          SelectionMode="Single"
-                          Background="White" RowHeight="35" ColumnHeaderHeight="40" GridLinesVisibility="Horizontal">
+                <Grid Grid.Row="1" Margin="0,0,0,10">
+                    <TextBox x:Name="txtSearch" 
+             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" 
+             Height="35" Padding="10,8" VerticalContentAlignment="Center"/>
+
+                    <TextBlock Text="🔍 Tìm kiếm món ăn..." 
+               Foreground="Gray" 
+               IsHitTestVisible="False" 
+               VerticalAlignment="Center" 
+               Margin="12,0,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=txtSearch}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+
+                <DataGrid x:Name="dgFood" Grid.Row="2"
+                  ItemsSource="{Binding FoodList}"
+                  SelectedItem="{Binding SelectedFood}"
+                  AutoGenerateColumns="False" IsReadOnly="True" 
+                  SelectionMode="Single"
+                  Background="White" RowHeight="35" ColumnHeaderHeight="40" GridLinesVisibility="Horizontal">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="ID" Binding="{Binding FoodID}" Width="50"/>
                         <DataGridTextColumn Header="Tên Món" Binding="{Binding FoodName}" Width="*"/>

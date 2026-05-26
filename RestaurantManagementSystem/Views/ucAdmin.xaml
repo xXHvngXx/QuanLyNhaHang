@@ -8,19 +8,20 @@
     <UserControl.Resources>
         <Style x:Key="MenuButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Height" Value="50"/>
+            <Setter Property="Foreground" Value="#BDC3C7"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Height" Value="55"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="Padding" Value="20,0,0,0"/>
+            <Setter Property="Padding" Value="40,0,0,0"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                        <Border Background="{TemplateBinding Background}" BorderBrush="#34495E" BorderThickness="0,0,0,0.5">
+                            <ContentPresenter Margin="15,0,0,0" 
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
                                               VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
@@ -29,6 +30,7 @@
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#34495E"/>
+                    <Setter Property="Foreground" Value="White"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -36,114 +38,114 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="240"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="#2C3E50" CornerRadius="0,15,15,0">
-            <Border.Effect>
-                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.3"/>
-            </Border.Effect>
-            <StackPanel Margin="0,30,0,0">
-                <Border Width="80" Height="80" Background="#34495E" CornerRadius="40" Margin="0,0,0,10">
-                    <TextBlock Text="🧑‍💼" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Border Grid.Column="0" Background="#2C3E50">
+            <StackPanel Margin="0,40,0,0">
+                <Border Width="70" Height="70" Background="#1A252F" CornerRadius="12" Margin="0,0,0,15">
+                    <TextBlock Text="⚙️" FontSize="35" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Border>
-                <TextBlock Text="ADMIN PANEL" Foreground="White" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+                <TextBlock Text="QUẢN TRỊ VIÊN" Foreground="#95A5A6" FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
-                <Button Content="🍔 Quản Lý Món Ăn" 
-                        Command="{Binding ChangeTabCommand}" 
-                        CommandParameter="0">
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="0">
-                                    <Setter Property="Background" Value="#34495E"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                <StackPanel>
+                    <Button Content="🍔  Quản Lý Món Ăn" Command="{Binding ChangeTabCommand}" CommandParameter="0">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedTabIndex}" Value="0">
+                                        <Setter Property="Background" Value="#3498DB"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
 
-                <Button Content="📂 Quản Lý Danh Mục" 
-                        Command="{Binding ChangeTabCommand}" 
-                        CommandParameter="1">
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="1">
-                                    <Setter Property="Background" Value="#34495E"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                    <Button Content="📂  Quản Lý Danh Mục" Command="{Binding ChangeTabCommand}" CommandParameter="1">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedTabIndex}" Value="1">
+                                        <Setter Property="Background" Value="#3498DB"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
 
-                <Button Content="👥 Quản Lý Tài Khoản" 
-                        Command="{Binding ChangeTabCommand}" 
-                        CommandParameter="2">
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="2">
-                                    <Setter Property="Background" Value="#34495E"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                    <Button Content="👥  Quản Lý Tài Khoản" Command="{Binding ChangeTabCommand}" CommandParameter="2">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedTabIndex}" Value="2">
+                                        <Setter Property="Background" Value="#3498DB"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
 
-                <Button Content="📊 Thống Kê Doanh Thu" 
-                        Command="{Binding ChangeTabCommand}" 
-                        CommandParameter="3">
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="3">
-                                    <Setter Property="Background" Value="#34495E"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                    <Button Content="📊  Thống Kê Doanh Thu" Command="{Binding ChangeTabCommand}" CommandParameter="3">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedTabIndex}" Value="3">
+                                        <Setter Property="Background" Value="#3498DB"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
 
-                <Button Content="🕵️ Hệ Thống Giám Sát" 
-                        Command="{Binding ChangeTabCommand}" 
-                        CommandParameter="4">
-                    <Button.Style>
-                        <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedTabIndex}" Value="4">
-                                    <Setter Property="Background" Value="#34495E"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Button.Style>
-                </Button>
+                    <Button Content="🕵️  Hệ Thống Giám Sát" Command="{Binding ChangeTabCommand}" CommandParameter="4">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource MenuButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedTabIndex}" Value="4">
+                                        <Setter Property="Background" Value="#3498DB"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                </StackPanel>
             </StackPanel>
         </Border>
 
-        <TabControl Grid.Column="1" SelectedIndex="{Binding SelectedTabIndex}" Background="Transparent" BorderThickness="0" Margin="20">
-            <TabControl.ItemContainerStyle>
-                <Style TargetType="TabItem">
-                    <Setter Property="Visibility" Value="Collapsed"/>
-                </Style>
-            </TabControl.ItemContainerStyle>
+        <Border Grid.Column="1" Margin="25" Background="White" CornerRadius="10">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="15" ShadowDepth="0" Color="#DCDDE1" Opacity="0.5"/>
+            </Border.Effect>
 
-            <TabItem>
-                <local:ucFood/>
-            </TabItem>
-            <TabItem>
-                <local:ucCategory/>
-            </TabItem>
-            <TabItem>
-                <local:ucAccount/>
-            </TabItem>
-            <TabItem>
-                <local:ucReport/>
-            </TabItem>
-            <TabItem>
-                <local:ucMonitor/>
-            </TabItem>
-        </TabControl>
+            <TabControl SelectedIndex="{Binding SelectedTabIndex}" Background="Transparent" BorderThickness="0" Padding="10">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+
+                <TabItem>
+                    <local:ucFood/>
+                </TabItem>
+                <TabItem>
+                    <local:ucCategory/>
+                </TabItem>
+                <TabItem>
+                    <local:ucAccount/>
+                </TabItem>
+                <TabItem>
+                    <local:ucReport/>
+                </TabItem>
+                <TabItem>
+                    <local:ucMonitor/>
+                </TabItem>
+            </TabControl>
+        </Border>
     </Grid>
 </UserControl>

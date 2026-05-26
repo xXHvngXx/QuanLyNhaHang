@@ -25,10 +25,11 @@ namespace RestaurantManagementSystem.BLL
         public string AddFood(string name, object selectedCategory, string priceText)
         {
             if (string.IsNullOrWhiteSpace(name)) return "Tên món ăn không được để trống!";
-            if (selectedCategory == null) return "Vui lòng chọn Danh mục món ăn!";
-            if (!decimal.TryParse(priceText, out decimal price) || price < 0) return "Giá tiền không hợp lệ (Phải là số >= 0)!";
 
-            int categoryId = System.Convert.ToInt32(selectedCategory);
+            if (selectedCategory == null || !int.TryParse(selectedCategory.ToString(), out int categoryId))
+                return "Vui lòng chọn Danh mục món ăn hợp lệ!";
+
+            if (!decimal.TryParse(priceText, out decimal price) || price < 0) return "Giá tiền không hợp lệ (Phải là số >= 0)!";
 
             //Kiểm tra trùng tên
             if (FoodDAL.Instance.CheckDuplicateFood(name, categoryId))
@@ -49,7 +50,8 @@ namespace RestaurantManagementSystem.BLL
             if (!int.TryParse(idText, out int id)) return "Vui lòng chọn một món ăn để sửa!";
             if (string.IsNullOrWhiteSpace(name)) return "Tên món ăn không được để trống!";
             if (selectedCategory == null) return "Vui lòng chọn Danh mục món ăn!";
-            if (!decimal.TryParse(priceText, out decimal price) || price < 0) return "Giá tiền không hợp lệ!";
+            if (!decimal.TryParse(priceText, out decimal price) || price <= 0)
+                return "Giá tiền không hợp lệ (Phải lớn hơn 0)!";
 
             int categoryId = System.Convert.ToInt32(selectedCategory);
 

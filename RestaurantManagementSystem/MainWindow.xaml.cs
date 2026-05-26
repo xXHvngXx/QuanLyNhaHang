@@ -162,6 +162,27 @@ namespace RestaurantManagementSystem
             txtUserDisplayName.Text = name.ToUpper();
             txtAvatarInitial.Text = !string.IsNullOrWhiteSpace(name) ? name[0].ToString().ToUpper() : "H";
 
+            if (_currentAccountRole == -1)
+            {
+                txtWelcomeTitle.Text = "Tài khoản đang chờ xác thực";
+                txtWelcomeTitle.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF7675")); 
+
+                txtWelcomeQuote.Text = "Tài khoản của bạn chưa được cấp quyền truy cập hệ thống. Vui lòng liên hệ Admin.";
+                txtWelcomeQuote.FontStyle = FontStyles.Normal;
+
+                // Vô hiệu hóa các nút chức năng 
+                btnPhucVu.IsEnabled = false;
+                btnThuNgan.IsEnabled = false;
+            }
+            else
+            {
+                txtWelcomeTitle.Text = "Chào mừng bạn quay trở lại";
+                txtWelcomeTitle.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2D3436"));
+
+                txtWelcomeQuote.Text = "“Nấu ăn là nghệ thuật, quản lý là một khoa học.”";
+                txtWelcomeQuote.FontStyle = FontStyles.Italic;
+            }
+
             txtRoleBadge.Text = (_currentAccountRole == 0) ? "👑 Admin" :
                                 (_currentAccountRole == 1) ? "👤 Staff" :
                                 (_currentAccountRole == 2) ? "💵 Cashier" : "⌛ Chờ duyệt";

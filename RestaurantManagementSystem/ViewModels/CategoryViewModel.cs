@@ -26,6 +26,7 @@ namespace RestaurantManagementSystem.ViewModels
                     CategoryID = _selectedCategory["CategoryID"].ToString();
                     CategoryName = _selectedCategory["CategoryName"].ToString();
                 }
+                CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -34,6 +35,19 @@ namespace RestaurantManagementSystem.ViewModels
 
         private string _categoryName;
         public string CategoryName { get => _categoryName; set => SetProperty(ref _categoryName, value); }
+
+        private string _searchText;
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    ApplyFilter();
+                }
+            }
+        }
         #endregion
 
         #region Commands
@@ -57,7 +71,7 @@ namespace RestaurantManagementSystem.ViewModels
 
             AddCommand = new RelayCommand<object>(
                 p => ExecuteAdd(),
-                p => !string.IsNullOrEmpty(CategoryName)
+                p => !string.IsNullOrEmpty(CategoryName) && SelectedCategory == null 
             );
 
             EditCommand = new RelayCommand<object>(
@@ -76,6 +90,8 @@ namespace RestaurantManagementSystem.ViewModels
         #region Execution Logic
         private void RefreshData()
         {
+            SearchText = string.Empty; 
+
             DataTable dt = CategoryBLL.Instance.GetCategories();
             if (dt != null)
             {
@@ -83,7 +99,6 @@ namespace RestaurantManagementSystem.ViewModels
                 dv.Sort = "CategoryID ASC";
                 CategoryList = dv;
 
-                // Tối ưu tính ID tự tăng bằng LINQ
                 int nextId = dt.Rows.Count > 0
                     ? dt.AsEnumerable().Max(r => Convert.ToInt32(r["CategoryID"])) + 1
                     : 1;
@@ -92,7 +107,7 @@ namespace RestaurantManagementSystem.ViewModels
             }
 
             CategoryName = string.Empty;
-            SelectedCategory = null; // Trả về trạng thái chuẩn để ô nhập liệu hiện ID mới
+            SelectedCategory = null;
         }
 
         private void ExecuteAdd()
@@ -116,6 +131,21 @@ namespace RestaurantManagementSystem.ViewModels
                 string message = CategoryBLL.Instance.DeleteCategory(CategoryID);
                 _messageService.ShowInfo("Thông báo", message);
                 RefreshData();
+            }
+        }
+
+        private void ApplyFilter()
+        {
+            if (CategoryList == null) return;
+
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                CategoryList.RowFilter = string.Empty;
+            }
+            else
+            {
+                // Lọc theo tên danh mục
+                CategoryList.RowFilter = $"CategoryName LIKE '%{SearchText.Replace("'", "''")}%'";
             }
         }
         #endregion

@@ -74,6 +74,19 @@ namespace RestaurantManagementSystem.ViewModels
                 }
             }
         }
+
+        private string _searchText;
+        public string SearchText
+        {
+            get => _searchText;
+            set
+            {
+                if (SetProperty(ref _searchText, value))
+                {
+                    ApplyFilter();
+                }
+            }
+        }
         #endregion
 
         #region Commands
@@ -162,15 +175,33 @@ namespace RestaurantManagementSystem.ViewModels
 
         private void RefreshData()
         {
+            SearchText = string.Empty; 
+
             var dt = AccountBLL.Instance.GetAccounts();
             if (dt != null)
                 AccountList = dt.DefaultView;
 
             UserName = "";
             DisplayName = "";
-            AccountType = -1;
+            AccountType = -99;
             IsUserNameReadOnly = false;
             SelectedItem = null;
+        }
+
+        private void ApplyFilter()
+        {
+            if (AccountList == null) return;
+
+            if (string.IsNullOrWhiteSpace(SearchText))
+            {
+                AccountList.RowFilter = string.Empty;
+            }
+            else
+            {
+                // Lọc theo UserName hoặc DisplayName
+                string filter = SearchText.Replace("'", "''");
+                AccountList.RowFilter = $"UserName LIKE '%{filter}%' OR DisplayName LIKE '%{filter}%'";
+            }
         }
     }
 }
