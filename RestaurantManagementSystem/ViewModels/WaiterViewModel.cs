@@ -125,6 +125,7 @@ namespace RestaurantManagementSystem.ViewModels
         public ICommand UpdateFoodCommand { get; set; }
         public ICommand DeleteFoodCommand { get; set; }
         public ICommand LoadDataCommand { get; set; }
+        public ICommand ConfirmOrderCommand { get; set; }
         #endregion
 
         public WaiterViewModel(IMessageService messageService)
@@ -147,7 +148,10 @@ namespace RestaurantManagementSystem.ViewModels
                 p => ExecuteDeleteFood(p),
                 p => p != null
             );
-
+            ConfirmOrderCommand = new RelayCommand<object>(
+                p => ExecuteConfirmOrder(),
+                p => SelectedTable != null && BillDetails != null && BillDetails.Count > 0
+            );
             InitData();
         }
 
@@ -357,12 +361,16 @@ namespace RestaurantManagementSystem.ViewModels
                 DataTable dt = DataProvider.Instance.ExecuteQuery("EXEC USP_GetBillDetailByTableID @idTable", new object[] { tableID });
 
                 BillDetails = ConvertDataTableToCollection(dt);
+
+                OnPropertyChanged(nameof(BillDetails));
+
                 TotalAmount = BillDetails.Sum(row => Convert.ToDecimal(row["TotalPrice"]));
             }
             catch (Exception ex)
             {
                 _messageService.ShowError("Lỗi tải hóa đơn", ex.Message);
             }
+
         }
 
         void ExecuteAddFood()
@@ -434,6 +442,27 @@ namespace RestaurantManagementSystem.ViewModels
                 catch (Exception ex)
                 {
                     _messageService.ShowError("Lỗi xóa món", ex.Message);
+                }
+            }
+        }
+
+        private void ExecuteConfirmOrder()
+        {
+            if (_messageService.ShowConfirm("Xác nhận", "Bạn có chắc chắn gửi các món này đến thu ngân không?"))
+            {
+                try
+                {
+                    int tableID = Convert.ToInt32(SelectedTable["TableID"]);
+
+                    DataProvider.Instance.ExecuteNonQuery("EXEC USP_ConfirmBillInfo @idTable", new object[] { tableID });
+
+                    _messageService.ShowInfo("Thông báo", "Đã gửi đơn hàng cho thu ngân!");
+
+                    LoadBill();
+                }
+                catch (Exception ex)
+                {
+                    _messageService.ShowError("Lỗi hệ thống", ex.Message);
                 }
             }
         }

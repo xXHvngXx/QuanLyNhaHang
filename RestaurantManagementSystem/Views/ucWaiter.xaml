@@ -3,10 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:RestaurantManagementSystem.Converters"
              mc:Ignorable="d"
              Background="Transparent">
 
     <UserControl.Resources>
+        <local:StatusToBoolConverter x:Key="StatusToBoolConverter"/>
+        <local:StatusToTextConverter x:Key="StatusToTextConverter"/>
         <Style x:Key="waitercombostyle" TargetType="ComboBox">
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -281,7 +284,9 @@
                         </Button.Resources>
                     </Button>
 
-                    <Button Content="SỬA" Command="{Binding UpdateFoodCommand}" CommandParameter="{Binding SelectedItem, ElementName=dgOrderBill}" Width="55" Height="35" Margin="0,20,4,0" Background="#F1C40F" Foreground="#2D3436" FontWeight="Bold">
+                    <Button Content="SỬA" Command="{Binding UpdateFoodCommand}" CommandParameter="{Binding SelectedItem, ElementName=dgOrderBill}" 
+                            IsEnabled="{Binding SelectedItem.Status, ElementName=dgOrderBill, Converter={StaticResource StatusToBoolConverter}}"
+                            Width="55" Height="35" Margin="0,20,4,0" Background="#F1C40F" Foreground="#2D3436" FontWeight="Bold">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="8"/>
@@ -289,7 +294,20 @@
                         </Button.Resources>
                     </Button>
 
-                    <Button Content="XÓA" Command="{Binding DeleteFoodCommand}" CommandParameter="{Binding SelectedItem, ElementName=dgOrderBill}" Width="55" Height="35" Margin="0,20,4,0" Background="#D63031" Foreground="White" FontWeight="Bold">
+                    <Button Content="XÓA" Command="{Binding DeleteFoodCommand}" CommandParameter="{Binding SelectedItem, ElementName=dgOrderBill}"
+                            IsEnabled="{Binding SelectedItem.Status, ElementName=dgOrderBill, Converter={StaticResource StatusToBoolConverter}}"
+                            Width="55" Height="35" Margin="0,20,4,0" Background="#D63031" Foreground="White" FontWeight="Bold">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                    
+                    <Button Content="GỬI ĐƠN" 
+                            Command="{Binding ConfirmOrderCommand}" 
+                            Width="80" Height="35" Margin="4,20,4,0" 
+                            Background="#27AE60" Foreground="White" FontWeight="Bold">
                         <Button.Resources>
                             <Style TargetType="Border">
                                 <Setter Property="CornerRadius" Value="8"/>
@@ -317,6 +335,8 @@
                         <DataGridTextColumn Header="SL" Binding="{Binding Quantity}" Width="50"/>
                         <DataGridTextColumn Header="Đơn giá" Binding="{Binding Price, StringFormat={}{0:N0}}" Width="90"/>
                         <DataGridTextColumn Header="Thành tiền" Binding="{Binding TotalPrice, StringFormat={}{0:N0}}" Width="100"/>
+                        <DataGridTextColumn Header="Trạng thái" Width="80" 
+                                            Binding="{Binding Status, Converter={StaticResource StatusToTextConverter}}"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
