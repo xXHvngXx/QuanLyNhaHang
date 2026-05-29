@@ -139,7 +139,7 @@
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid Margin="8">
-                                <Border Width="100" Height="80" CornerRadius="12" Padding="5">
+                                <Border x:Name="TableBorder" Width="100" Height="80" CornerRadius="12" Padding="5">
                                     <Border.Style>
                                         <Style TargetType="Border">
                                             <Setter Property="Background" Value="#44BD32"/>
@@ -150,11 +150,64 @@
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding TableName}" Foreground="White" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding StatusText}" Foreground="#F5F5F5" FontSize="10" HorizontalAlignment="Center"/>
-                                    </StackPanel>
+
+                                    <Grid>
+                                        <StackPanel VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding TableName}" Foreground="White" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding StatusText}" Foreground="#F5F5F5" FontSize="10" HorizontalAlignment="Center"/>
+                                        </StackPanel>
+
+                                        <Path Width="22" Height="19" 
+      Fill="#F1C40F" 
+      HorizontalAlignment="Right" 
+      VerticalAlignment="Top" 
+      Margin="0,2,2,0"
+      ToolTip="Bàn đang có hóa đơn"
+      Stretch="Uniform">
+                                            <Path.Data>
+                                                <PathGeometry Figures="M 11,0 L 22,19 L 0,19 Z" FillRule="Nonzero"/>
+                                            </Path.Data>
+
+                                            <Path.Stroke>
+                                                <SolidColorBrush Color="#F1C40F"/>
+                                            </Path.Stroke>
+                                            <Path.StrokeThickness>2</Path.StrokeThickness>
+                                            <Path.StrokeLineJoin>Round</Path.StrokeLineJoin>
+
+                                            <Path.Style>
+                                                <Style TargetType="Path">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="1">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Path.Style>
+                                        </Path>
+
+                                        <TextBlock Text="!" 
+                                            Foreground="#2D3436" 
+                                            FontWeight="ExtraBold" 
+                                            FontSize="11"
+                                            HorizontalAlignment="Right" 
+                                            VerticalAlignment="Top" 
+                                            Margin="0,4,9,0" 
+                                            IsHitTestVisible="False">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="1">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
                                 </Border>
+
                                 <Border BorderBrush="#F1C40F" BorderThickness="3" CornerRadius="12" 
                                         Visibility="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             </Grid>

@@ -24,7 +24,8 @@ namespace RestaurantManagementSystem.DAL
         {
             string query = "exec USP_CheckAccountExist @userName";
             DataTable data = DataProvider.Instance.ExecuteQuery(query, new object[] { userName });
-            return Convert.ToInt32(data.Rows[0][0]) > 0;
+
+            return (data != null && data.Rows.Count > 0) && Convert.ToInt32(data.Rows[0][0]) > 0;
         }
 
         public bool InsertAccount(string userName, string displayName, string password, int role)
@@ -72,6 +73,18 @@ namespace RestaurantManagementSystem.DAL
                 }
             }
             return false;
+        }
+
+        public string GetDisplayNameByUserName(string userName)
+        {
+            string query = "exec USP_GetSecurityInfo @userName";
+            DataTable data = DataProvider.Instance.ExecuteQuery(query, new object[] { userName });
+
+            if (data != null && data.Rows.Count > 0)
+            {
+                return data.Rows[0]["DisplayName"]?.ToString();
+            }
+            return null;
         }
     }
 }

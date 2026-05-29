@@ -111,7 +111,12 @@ namespace RestaurantManagementSystem.Views
             txtPasswordVisible.Visibility = Visibility.Collapsed;
             txtPassword.Focus();
         }
-
+        private void btnForgotPassword_Click(object sender, RoutedEventArgs e)
+        {
+            ForgotPasswordWindow win = new ForgotPasswordWindow();
+            win.DataContext = new ForgotPasswordViewModel();
+            win.ShowDialog();
+        }
         #endregion
     }
 }

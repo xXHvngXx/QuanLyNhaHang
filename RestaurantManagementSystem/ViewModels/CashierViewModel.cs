@@ -100,38 +100,48 @@ namespace RestaurantManagementSystem.ViewModels
             get => _selectedBillDetail;
             set
             {
-                if (SetProperty(ref _selectedBillDetail, value) && value != null)
+                if (_selectedBillDetail != null)
                 {
-                    Quantity = Convert.ToInt32(value["Quantity"]);
+                    SaveCurrentNote();
+                }
 
-                    // ĐỒNG BỘ NGƯỢC VỀ COMBOBOX DANH MỤC (CATEGORY)
-                    if (Categories != null && value.Row.Table.Columns.Contains("CategoryID"))
+                if (SetProperty(ref _selectedBillDetail, value))
+                {
+                    if (value != null)
                     {
-                        int targetCategoryId = Convert.ToInt32(value["CategoryID"]);
+                        Quantity = Convert.ToInt32(value["Quantity"]);
 
-                        foreach (DataRowView categoryRow in Categories)
+                        Note = value.Row.Table.Columns.Contains("Note") ? value["Note"].ToString() : "";
+
+                        if (Categories != null && value.Row.Table.Columns.Contains("CategoryID"))
                         {
-                            if (Convert.ToInt32(categoryRow["CategoryID"]) == targetCategoryId)
+                            int targetCategoryId = Convert.ToInt32(value["CategoryID"]);
+                            foreach (DataRowView categoryRow in Categories)
                             {
-                                SelectedCategory = categoryRow;
-                                break;
+                                if (Convert.ToInt32(categoryRow["CategoryID"]) == targetCategoryId)
+                                {
+                                    SelectedCategory = categoryRow;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (Foods != null && value.Row.Table.Columns.Contains("FoodID"))
+                        {
+                            int targetFoodId = Convert.ToInt32(value["FoodID"]);
+                            foreach (DataRowView foodRow in Foods)
+                            {
+                                if (Convert.ToInt32(foodRow["FoodID"]) == targetFoodId)
+                                {
+                                    SelectedFood = foodRow;
+                                    break;
+                                }
                             }
                         }
                     }
-
-                    // ĐỒNG BỘ NGƯỢC VỀ COMBOBOX MÓN ĂN (FOOD)
-                    if (Foods != null && value.Row.Table.Columns.Contains("FoodID"))
+                    else
                     {
-                        int targetFoodId = Convert.ToInt32(value["FoodID"]);
-
-                        foreach (DataRowView foodRow in Foods)
-                        {
-                            if (Convert.ToInt32(foodRow["FoodID"]) == targetFoodId)
-                            {
-                                SelectedFood = foodRow;
-                                break;
-                            }
-                        }
+                        Note = "";
                     }
                 }
             }
@@ -359,6 +369,20 @@ namespace RestaurantManagementSystem.ViewModels
 
             LoadTables();
             _messageService.ShowInfo("Thông báo", "Đã cập nhật số lượng.");
+        }
+
+        private void SaveCurrentNote()
+        {
+            if (SelectedBillDetail != null)
+            {
+                int billId = Convert.ToInt32(SelectedBillDetail["BillID"]);
+                int foodId = Convert.ToInt32(SelectedBillDetail["FoodID"]);
+
+                DataProvider.Instance.ExecuteNonQuery(
+                    "UPDATE dbo.BillInfo SET Note = @note WHERE BillID = @billId AND FoodID = @foodId",
+                    new object[] { Note, billId, foodId }
+                );
+            }
         }
 
         private void ExecuteDeleteFood()

@@ -136,7 +136,15 @@ namespace RestaurantManagementSystem.ViewModels
 
             AddFoodCommand = new RelayCommand<object>(
                 p => ExecuteAddFood(),
-                p => SelectedTable != null && SelectedFood != null
+                p =>
+                {
+                    if (SelectedTable == null || SelectedFood == null) return false;
+
+                    if (BillDetails != null && BillDetails.Any(row => Convert.ToInt32(row["Status"]) == 1))
+                        return false;
+
+                    return true;
+                }
             );
 
             UpdateFoodCommand = new RelayCommand<DataRowView>(
@@ -148,9 +156,19 @@ namespace RestaurantManagementSystem.ViewModels
                 p => ExecuteDeleteFood(p),
                 p => p != null
             );
+
             ConfirmOrderCommand = new RelayCommand<object>(
                 p => ExecuteConfirmOrder(),
-                p => SelectedTable != null && BillDetails != null && BillDetails.Count > 0
+                p =>
+                {
+                    if (SelectedTable == null || BillDetails == null || BillDetails.Count == 0)
+                        return false;
+
+                    if (BillDetails.Any(row => Convert.ToInt32(row["Status"]) == 1))
+                        return false;
+
+                    return true;
+                }
             );
             InitData();
         }
@@ -352,6 +370,7 @@ namespace RestaurantManagementSystem.ViewModels
             {
                 BillDetails = null;
                 TotalAmount = 0;
+                CommandManager.InvalidateRequerySuggested();
                 return;
             }
 
@@ -361,16 +380,23 @@ namespace RestaurantManagementSystem.ViewModels
                 DataTable dt = DataProvider.Instance.ExecuteQuery("EXEC USP_GetBillDetailByTableID @idTable", new object[] { tableID });
 
                 BillDetails = ConvertDataTableToCollection(dt);
-
                 OnPropertyChanged(nameof(BillDetails));
 
-                TotalAmount = BillDetails.Sum(row => Convert.ToDecimal(row["TotalPrice"]));
+                if (BillDetails != null && BillDetails.Count > 0)
+                {
+                    TotalAmount = BillDetails.Sum(row => Convert.ToDecimal(row["TotalPrice"]));
+                }
+                else
+                {
+                    TotalAmount = 0;
+                }
             }
             catch (Exception ex)
             {
                 _messageService.ShowError("Lỗi tải hóa đơn", ex.Message);
             }
 
+            CommandManager.InvalidateRequerySuggested();
         }
 
         void ExecuteAddFood()
@@ -453,12 +479,13 @@ namespace RestaurantManagementSystem.ViewModels
                 try
                 {
                     int tableID = Convert.ToInt32(SelectedTable["TableID"]);
-
                     DataProvider.Instance.ExecuteNonQuery("EXEC USP_ConfirmBillInfo @idTable", new object[] { tableID });
 
                     _messageService.ShowInfo("Thông báo", "Đã gửi đơn hàng cho thu ngân!");
 
                     LoadBill();
+
+                    CommandManager.InvalidateRequerySuggested();
                 }
                 catch (Exception ex)
                 {

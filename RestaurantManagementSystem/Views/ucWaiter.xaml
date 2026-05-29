@@ -70,7 +70,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-
         <Style x:Key="PlaceholderTextBoxStyle" TargetType="TextBox">
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -103,6 +102,29 @@
                                 </MultiDataTrigger.Conditions>
                                 <Setter TargetName="txtPlaceholder" Property="Visibility" Value="Visible"/>
                             </MultiDataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="ActionButtonStyle" TargetType="Button">
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#0984E3"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                        Background="{TemplateBinding Background}" 
+                        CornerRadius="8">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#B2BEC3"/>
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -276,45 +298,25 @@
                                  Text="{Binding Quantity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
 
-                    <Button Content="THÊM" Command="{Binding AddFoodCommand}" Width="55" Height="35" Margin="0,20,4,0" Background="#0984E3" Foreground="White" FontWeight="Bold">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="8"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
+                    <Button Content="THÊM" Style="{StaticResource ActionButtonStyle}"
+                            Command="{Binding AddFoodCommand}" Width="55" Margin="0,20,4,0" 
+                            Background="#0984E3" Foreground="White"/>
 
-                    <Button Content="SỬA" Command="{Binding UpdateFoodCommand}" CommandParameter="{Binding SelectedItem, ElementName=dgOrderBill}" 
+                    <Button Content="SỬA" Style="{StaticResource ActionButtonStyle}"
+                            Command="{Binding UpdateFoodCommand}" 
+                            CommandParameter="{Binding SelectedItem, ElementName=dgOrderBill}" 
                             IsEnabled="{Binding SelectedItem.Status, ElementName=dgOrderBill, Converter={StaticResource StatusToBoolConverter}}"
-                            Width="55" Height="35" Margin="0,20,4,0" Background="#F1C40F" Foreground="#2D3436" FontWeight="Bold">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="8"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
+                            Width="55" Margin="0,20,4,0" Background="#F1C40F" Foreground="#2D3436"/>
 
-                    <Button Content="XÓA" Command="{Binding DeleteFoodCommand}" CommandParameter="{Binding SelectedItem, ElementName=dgOrderBill}"
+                    <Button Content="XÓA" Style="{StaticResource ActionButtonStyle}"
+                            Command="{Binding DeleteFoodCommand}" 
+                            CommandParameter="{Binding SelectedItem, ElementName=dgOrderBill}" 
                             IsEnabled="{Binding SelectedItem.Status, ElementName=dgOrderBill, Converter={StaticResource StatusToBoolConverter}}"
-                            Width="55" Height="35" Margin="0,20,4,0" Background="#D63031" Foreground="White" FontWeight="Bold">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="8"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                    
-                    <Button Content="GỬI ĐƠN" 
-                            Command="{Binding ConfirmOrderCommand}" 
-                            Width="80" Height="35" Margin="4,20,4,0" 
-                            Background="#27AE60" Foreground="White" FontWeight="Bold">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="8"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
+                            Width="55" Margin="0,20,4,0" Background="#D63031" Foreground="White"/>
 
+                    <Button Content="GỬI ĐƠN" Style="{StaticResource ActionButtonStyle}"
+                            Command="{Binding ConfirmOrderCommand}" Width="80" Margin="4,20,4,0" 
+                            Background="#27AE60" Foreground="White"/>
                     <Button Content="🔄" Command="{Binding LoadDataCommand}" Width="40" Height="35" Margin="0,20,0,0" Background="#636E72" Foreground="White" FontSize="16">
                         <Button.Resources>
                             <Style TargetType="Border">
