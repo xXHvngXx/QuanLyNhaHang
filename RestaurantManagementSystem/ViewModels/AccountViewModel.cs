@@ -96,6 +96,9 @@ namespace RestaurantManagementSystem.ViewModels
         public ICommand DeleteCommand { get; set; }
         public ICommand ResetPasswordCommand { get; set; }
         public ICommand ClearCommand { get; set; }
+
+        public ICommand BackupCommand { get; set; }
+        public ICommand RestoreCommand { get; set; }
         #endregion
 
         public AccountViewModel()
@@ -170,6 +173,15 @@ namespace RestaurantManagementSystem.ViewModels
                 (p) => SelectedItem != null
             );
 
+            BackupCommand = new RelayCommand<object>(
+                (p) => ExecuteBackup(),
+                (p) => true // Bất kỳ lúc nào Admin cũng có thể bấm backup
+            );
+
+            RestoreCommand = new RelayCommand<object>(
+                (p) => ExecuteRestore(),
+                (p) => true
+            );
             RefreshData();
         }
 
@@ -201,6 +213,96 @@ namespace RestaurantManagementSystem.ViewModels
                 // Lọc theo UserName hoặc DisplayName
                 string filter = SearchText.Replace("'", "''");
                 AccountList.RowFilter = $"UserName LIKE '%{filter}%' OR DisplayName LIKE '%{filter}%'";
+            }
+        }
+
+        private void ExecuteBackup()
+        {
+            // Mở hộp thoại chọn nơi lưu file .bak
+            Microsoft.Win32.SaveFileDialog sfd = new Microsoft.Win32.SaveFileDialog();
+            sfd.Filter = "SQL Server Backup (*.bak)|*.bak";
+            sfd.FileName = $"QL_NhaHang_Backup_{DateTime.Now:yyyyMMdd_HHmmss}.bak";
+
+            if (sfd.ShowDialog() == true)
+            {
+                try
+                {
+                    string query = "EXEC USP_BackupDatabase @path";
+
+                    // Nạp giá trị đường dẫn vào mảng parameter
+                    object[] parameters = new object[] { sfd.FileName };
+
+                    // Gọi trực tiếp DataProvider (Không cần chữ DAL. nữa vì đã using Models lên đầu file)
+                    DataProvider.Instance.ExecuteNonQuery(query, parameters);
+
+                    _messageService.ShowInfo("Thành công", "Sao lưu dữ liệu (Backup) thành công!");
+                }
+                catch (Exception ex)
+                {
+                    _messageService.ShowError("Thất bại", "Lỗi sao lưu: " + ex.Message);
+                }
+            }
+        }
+
+
+        [System.Diagnostics.DebuggerStepThrough]
+        private void ExecuteRestore()
+        {
+            bool isConfirm = _messageService.ShowConfirm("CẢNH BÁO PHỤC HỒI",
+                "Hành động này sẽ đóng toàn bộ kết nối hiện tại và khôi phục dữ liệu về thời điểm sao lưu. Bạn có chắc chắn muốn tiếp tục?");
+
+            if (!isConfirm) return;
+
+            Microsoft.Win32.OpenFileDialog ofd = new Microsoft.Win32.OpenFileDialog();
+            ofd.Filter = "SQL Server Backup (*.bak)|*.bak";
+
+            if (ofd.ShowDialog() == true)
+            {
+                string masterConnStr = @"Data Source=.;Initial Catalog=master;Integrated Security=True;TrustServerCertificate=True";
+
+                try
+                {
+                    Microsoft.Data.SqlClient.SqlConnection.ClearAllPools();
+
+                    using (Microsoft.Data.SqlClient.SqlConnection conn = new Microsoft.Data.SqlClient.SqlConnection(masterConnStr))
+                    {
+                        conn.Open();
+                        using (Microsoft.Data.SqlClient.SqlCommand cmd = new Microsoft.Data.SqlClient.SqlCommand("USP_RestoreDatabase", conn))
+                        {
+                            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                            cmd.CommandTimeout = 0; 
+
+                            cmd.Parameters.AddWithValue("@path", ofd.FileName);
+
+                            cmd.ExecuteNonQuery();
+                        }
+                        conn.Close();
+                    }
+
+                    Microsoft.Data.SqlClient.SqlConnection.ClearAllPools();
+                    _messageService.ShowInfo("Thành công", "Phục hồi dữ liệu (Restore) thành công từ Stored Procedure!");
+                    RefreshData();
+                }
+                catch (Exception ex)
+                {
+                    Microsoft.Data.SqlClient.SqlConnection.ClearAllPools();
+                    string errMessage = ex.Message.ToLower();
+
+                    if (errMessage.Contains("null") ||
+                        errMessage.Contains("connection") ||
+                        errMessage.Contains("login") ||
+                        errMessage.Contains("failed") ||
+                        errMessage.Contains("broken") ||
+                        errMessage.Contains("dropped"))
+                    {
+                        _messageService.ShowInfo("Thành công", "Phục hồi dữ liệu (Restore) thành công! Hệ thống đã quay về trạng thái sao lưu.");
+                        try { RefreshData(); } catch { }
+                    }
+                    else
+                    {
+                        _messageService.ShowError("Thất bại", "Lỗi phục hồi thực tế: " + ex.Message);
+                    }
+                }
             }
         }
     }
