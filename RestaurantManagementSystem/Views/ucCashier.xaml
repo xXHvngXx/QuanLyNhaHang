@@ -352,7 +352,7 @@
 
                     <UniformGrid Columns="2" Height="45">
                         <Border CornerRadius="8" Background="#DFE6E9" Margin="5">
-                            <Button Content="HỦY BỎ" Click="btnCancelPay_Click" Foreground="#2D3436" 
+                            <Button x:Name="btnCancelPay" Content="HỦY BỎ" Click="btnCancelPay_Click" Foreground="#2D3436" 
                             Background="Transparent" BorderThickness="0" Cursor="Hand" FontWeight="SemiBold"/>
                         </Border>
 

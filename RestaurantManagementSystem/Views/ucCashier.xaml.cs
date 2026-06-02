@@ -36,6 +36,8 @@ namespace RestaurantManagementSystem.Views
                     lblChangeMoney.Text = "0 VNĐ";
                     btnConfirmPay.IsEnabled = false;
 
+                    btnCancelPay.IsEnabled = true;
+
                     payConfirmOverlay.Visibility = Visibility.Visible;
                     txtCustomerMoney.Focus();
                 }
@@ -108,6 +110,8 @@ namespace RestaurantManagementSystem.Views
                     lblChangeMoney.Text = "0 VNĐ";
                     btnConfirmPay.IsEnabled = false;
 
+                    btnCancelPay.IsEnabled = true;
+
                     vm.CustomerMoney = 0;
                     vm.ChangeMoney = 0;
                     return;
@@ -115,6 +119,16 @@ namespace RestaurantManagementSystem.Views
 
                 if (decimal.TryParse(rawText, out decimal customerMoney))
                 {
+             
+                    if (customerMoney != 0)
+                    {
+                        btnCancelPay.IsEnabled = false;
+                    }
+                    else
+                    {
+                        btnCancelPay.IsEnabled = true; 
+                    }
+
                     txtCustomerMoney.TextChanged -= txtCustomerMoney_TextChanged;
                     txtCustomerMoney.Text = string.Format("{0:N0}", customerMoney);
                     txtCustomerMoney.SelectionStart = txtCustomerMoney.Text.Length;
@@ -130,13 +144,13 @@ namespace RestaurantManagementSystem.Views
                     {
                         lblChangeMoney.Text = string.Format("{0:N0} VNĐ", change);
                         lblChangeMoney.Foreground = System.Windows.Media.Brushes.Navy;
-                        btnConfirmPay.IsEnabled = true; 
+                        btnConfirmPay.IsEnabled = true;
                     }
                     else
                     {
                         lblChangeMoney.Text = $"Thiếu {string.Format("{0:N0}", Math.Abs(change))} VNĐ";
                         lblChangeMoney.Foreground = System.Windows.Media.Brushes.Crimson;
-                        btnConfirmPay.IsEnabled = false; 
+                        btnConfirmPay.IsEnabled = false;
                     }
                 }
             }
