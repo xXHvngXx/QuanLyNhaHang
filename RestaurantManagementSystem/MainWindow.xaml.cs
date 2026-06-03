@@ -147,11 +147,60 @@ namespace RestaurantManagementSystem
             if (txtGreeting.Text != greeting) txtGreeting.Text = greeting;
         }
 
+        public static bool CanStaffEditFood { get; set; } = true;
+        public static bool CanStaffDeleteFood { get; set; } = true;
+        public static bool CanStaffSendFood { get; set; } = true;
+
+        public static bool CanCashierPay { get; set; } = true;
+        public static bool CanCashierPrint { get; set; } = true;
+
         private void PhanQuyen()
         {
             spAdminSection.Visibility = (_currentAccountRole == 0) ? Visibility.Visible : Visibility.Collapsed;
-            btnPhucVu.Visibility = (_currentAccountRole == 0 || _currentAccountRole == 1) ? Visibility.Visible : Visibility.Collapsed;
-            btnThuNgan.Visibility = (_currentAccountRole == 0 || _currentAccountRole == 2) ? Visibility.Visible : Visibility.Collapsed;
+
+            btnPhucVu.Visibility = (_currentAccountRole == 0 || _currentAccountRole == 1 || (_currentAccountRole >= 11 && _currentAccountRole <= 15))
+                                   ? Visibility.Visible : Visibility.Collapsed;
+
+            btnThuNgan.Visibility = (_currentAccountRole == 0 || _currentAccountRole == 2 || (_currentAccountRole >= 21 && _currentAccountRole <= 23))
+                                   ? Visibility.Visible : Visibility.Collapsed;
+
+            CanStaffEditFood = true;
+            CanStaffDeleteFood = true;
+            CanStaffSendFood = true;
+
+            CanCashierPay = true;
+            CanCashierPrint = true;
+
+            //Quyền của phục vụ
+            if (_currentAccountRole == 11) CanStaffEditFood = false;
+            else if (_currentAccountRole == 12) CanStaffDeleteFood = false;
+            else if (_currentAccountRole == 13) CanStaffSendFood = false;
+            else if (_currentAccountRole == 14) { CanStaffEditFood = false; CanStaffDeleteFood = false; }
+            else if (_currentAccountRole == 15) { CanStaffEditFood = false; CanStaffDeleteFood = false; CanStaffSendFood = false; }
+
+            //Quyền của thu ngân
+            if (_currentAccountRole == 21)
+            {
+                CanCashierPay = false;   
+                CanCashierPrint = true;  // Vẫn cho phép in hóa đơn tạm (Nút in sáng)
+            }
+            else if (_currentAccountRole == 22)
+            {
+                CanCashierPay = true;    // Vẫn cho phép thanh toán (Nút thanh toán sáng)
+                CanCashierPrint = false; 
+            }
+            else if (_currentAccountRole == 23)
+            {
+                CanCashierPay = false;   // Khóa cả hai tính năng
+                CanCashierPrint = false;
+            }
+            else
+            {
+                // Trường hợp _currentAccountRole == 2 (Thu ngân chuẩn full quyền) hoặc Admin (0)
+                CanCashierPay = true;
+                CanCashierPrint = true;
+            }
+
         }
 
         public void LoadUserUI()
@@ -184,8 +233,8 @@ namespace RestaurantManagementSystem
             }
 
             txtRoleBadge.Text = (_currentAccountRole == 0) ? "👑 Admin" :
-                                (_currentAccountRole == 1) ? "👤 Staff" :
-                                (_currentAccountRole == 2) ? "💵 Cashier" : "⌛ Chờ duyệt";
+                    (_currentAccountRole == 1 || (_currentAccountRole >= 11 && _currentAccountRole <= 15)) ? "👤 Staff" :
+                    (_currentAccountRole == 2 || (_currentAccountRole >= 21 && _currentAccountRole <= 23)) ? "💵 Cashier" : "⌛ Chờ duyệt";
         }
 
         private void btnDoiMatKhau_Click(object sender, RoutedEventArgs e)

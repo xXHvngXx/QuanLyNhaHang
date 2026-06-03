@@ -1,5 +1,6 @@
 ﻿<UserControl x:Class="RestaurantManagementSystem.Views.ucCashier"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:local="clr-namespace:RestaurantManagementSystem"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
@@ -299,7 +300,22 @@
                     <Button Content="CẬP NHẬT SL" Command="{Binding UpdateFoodCommand}" Visibility="Collapsed"/>
                     <Button Content="XÓA MÓN" Command="{Binding DeleteFoodCommand}" Visibility="Collapsed"/>
 
-                    <Button Content="THANH TOÁN" Click="btnShowPayConfirm_Click" Background="#00A8FF" Foreground="White" BorderThickness="0" FontWeight="Bold" FontSize="14" Cursor="Hand"/>
+                    <Button Content="THANH TOÁN" 
+                            Click="btnShowPayConfirm_Click" 
+                            Background="#00A8FF" Foreground="White" BorderThickness="0" FontWeight="Bold" FontSize="14" Cursor="Hand">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="IsEnabled" Value="True"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Path=(local:MainWindow.CanCashierPay)}" Value="False">
+                                        <Setter Property="IsEnabled" Value="False"/>
+                                        <Setter Property="Background" Value="#DFE6E9"/>
+                                        <Setter Property="Foreground" Value="#A5B1C2"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </UniformGrid>
 
                 <Separator Margin="0,15"/>

@@ -192,15 +192,35 @@ namespace RestaurantManagementSystem.ViewModels
 
             DeleteFoodCommand = new RelayCommand<object>(
                 p => ExecuteDeleteFood(),
-                p => false); 
+                p => false);
 
             PayCommand = new RelayCommand<object>(
                 p => ExecutePay(),
-                p => CurrentBillId != 0);
+                p => {
+                    // Có hoá đơn
+                    if (CurrentBillId == 0) return false;
+
+                    // Kiểm tra quyền Thu ngân 
+                    if (AccountDAL.LoginAccount != null && Convert.ToInt32(AccountDAL.LoginAccount["Role"]) != 0)
+                    {
+                        return MainWindow.CanCashierPay;
+                    }
+                    return true;
+                }
+            );
 
             PrintBillCommand = new RelayCommand<object>(
                 p => ExecutePrintBill(),
-                p => CurrentBillId != 0 && BillDetails != null);
+                p => {
+                    if (CurrentBillId == 0) return false;
+
+                    if (AccountDAL.LoginAccount != null && Convert.ToInt32(AccountDAL.LoginAccount["Role"]) != 0)
+                    {
+                        return MainWindow.CanCashierPrint;
+                    }
+                    return true;
+                }
+            );
         }
 
         #region Data Loading Logic
@@ -350,6 +370,7 @@ namespace RestaurantManagementSystem.ViewModels
                 TotalAmount = 0;
                 CurrentBillId = 0;
             }
+            System.Windows.Input.CommandManager.InvalidateRequerySuggested();
         }
         #endregion
 

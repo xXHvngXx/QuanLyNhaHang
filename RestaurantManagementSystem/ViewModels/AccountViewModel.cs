@@ -51,7 +51,7 @@ namespace RestaurantManagementSystem.ViewModels
         public DataRowView SelectedItem
         {
             get => _selectedItem;
-            set 
+            set
             {
                 if (SetProperty(ref _selectedItem, value))
                 {
@@ -59,17 +59,81 @@ namespace RestaurantManagementSystem.ViewModels
                     {
                         UserName = value["UserName"]?.ToString();
                         DisplayName = value["DisplayName"]?.ToString();
+                        IsUserNameReadOnly = true; 
 
-                        AccountType = Convert.ToInt32(value["Role"]);
+                        // Lấy mã Role thực tế từ cơ sở dữ liệu (Ví dụ: 0, 1, 2, 21, 22, 23...)
+                        int currentRole = Convert.ToInt32(value["Role"]);
 
-                        IsUserNameReadOnly = true; // Khóa TextBox UserName không cho sửa
+                        // QUẢN TRỊ VIÊN (Role = 0)
+                        if (currentRole == 0)
+                        {
+                            AccountType = 0;
+                            IsFormatStaff = false;   // Ẩn bảng Phục vụ
+                            IsFormatCashier = false; // Ẩn bảng Thu ngân
+                        }
+                        else if (currentRole == -1)
+                        {
+                            AccountType = -1;        // Đóng băng
+                            IsFormatStaff = false;   // Ẩn bảng Phục vụ
+                            IsFormatCashier = false; // Ẩn bảng Thu ngân
+                        }
+                        // THU NGÂN (Role = 2 hoặc các mã bị giới hạn quyền như 21, 22, 23)
+                        else if (currentRole == 2 || currentRole == 21 || currentRole == 22 || currentRole == 23)
+                        {
+                            AccountType = 2; // Chọn mục Thu ngân ở ComboBox Loại tài khoản
+                            IsFormatStaff = false;   // Ẩn bảng Phục vụ
+                            IsFormatCashier = true;  // Mở hiện bảng CheckBox của Thu ngân
+
+                            // Kiểm tra xem trong DB tài khoản này đang bị phạt/khóa quyền gì thì bỏ tích tương ứng
+                            if (currentRole == 21)
+                            {
+                                CanCheckout = false;    
+                                CanPrintDraft = true;
+                            }
+                            else if (currentRole == 22)
+                            {
+                                CanCheckout = true;     
+                                CanPrintDraft = false;  
+                            }
+                            else if (currentRole == 23)
+                            {
+                                CanCheckout = false;   
+                                CanPrintDraft = false;
+                            }
+                            else
+                            {
+                                CanCheckout = true;     // Role = 2: Đầy đủ quyền chuẩn
+                                CanPrintDraft = true;
+                            }
+                        }
+                        // PHỤC VỤ (Role = 1 hoặc các mã hạn chế 11, 12, 13...)
+                        else
+                        {
+                            AccountType = 1;
+                            IsFormatStaff = true;    // Hiện bảng Phục vụ (để tạm đó, xử lý sau)
+                            IsFormatCashier = false; // Ẩn bảng Thu ngân
+
+                            CanEditFood = true;
+                            CanDeleteFood = true;
+                            CanSendFood = true;
+
+                            // Kiểm tra xem trong DB tài khoản này đang bị phạt/khóa quyền gì thì bỏ tích tương ứng
+                            if (currentRole == 11) CanEditFood = false;
+                            else if (currentRole == 12) CanDeleteFood = false;
+                            else if (currentRole == 13) CanSendFood = false;
+                            else if (currentRole == 14) { CanEditFood = false; CanDeleteFood = false; }
+                            else if (currentRole == 15) { CanEditFood = false; CanDeleteFood = false; CanSendFood = false; }
+                        }
                     }
                     else
                     {
+                        // Reset dữ liệu về trống khi không chọn dòng nào
                         UserName = "";
                         DisplayName = "";
-                        AccountType = -1; // Reset về mặc định
-                        IsUserNameReadOnly = false; 
+                        AccountType = -99;
+                        IsUserNameReadOnly = false;
+                        IsFormatStaff = false;
+                        IsFormatCashier = false;
                     }
                 }
             }
@@ -87,6 +151,58 @@ namespace RestaurantManagementSystem.ViewModels
                 }
             }
         }
+
+        private bool _isFormatStaff;
+        public bool IsFormatStaff
+        {
+            get => _isFormatStaff;
+            set => SetProperty(ref _isFormatStaff, value);
+        }
+
+        private bool _canEditFood;
+        public bool CanEditFood
+        {
+            get => _canEditFood;
+            set => SetProperty(ref _canEditFood, value);
+        }
+
+        private bool _canDeleteFood;
+        public bool CanDeleteFood
+        {
+            get => _canDeleteFood;
+            set => SetProperty(ref _canDeleteFood, value);
+        }
+
+        private bool _canSendFood;
+        public bool CanSendFood
+        {
+            get => _canSendFood;
+            set => SetProperty(ref _canSendFood, value);
+        }
+
+        private bool _isFormatCashier;
+        public bool IsFormatCashier
+        {
+            get => _isFormatCashier;
+            set => SetProperty(ref _isFormatCashier, value);
+        }
+
+        private bool _canPrintDraft = true;
+        public bool CanPrintDraft
+        {
+            get => _canPrintDraft;
+            set => SetProperty(ref _canPrintDraft, value);
+        }
+
+        private bool _canCheckout = true;
+        public bool CanCheckout
+        {
+            get => _canCheckout;
+            set => SetProperty(ref _canCheckout, value);
+        }
+
+        public ICommand UpdateStaffPermissionCommand { get; set; }
+        public ICommand UpdateCashierPermissionCommand { get; set; }
         #endregion
 
         #region Commands
@@ -183,6 +299,66 @@ namespace RestaurantManagementSystem.ViewModels
                 (p) => true
             );
             RefreshData();
+
+            // --- KHỞI TẠO COMMAND: ÁP ĐẶT QUYỀN CHO PHỤC VỤ ---
+            UpdateStaffPermissionCommand = new RelayCommand<object>(
+                (p) => {
+                    try
+                    {
+                        int calculatedRole = 1; // Mặc định ban đầu đầy đủ quyền
+
+                        // Tính toán mã Role phạt dựa theo các CheckBox bị bỏ tích (false)
+                        if (!CanEditFood && CanDeleteFood && CanSendFood) calculatedRole = 11;
+                        else if (CanEditFood && !CanDeleteFood && CanSendFood) calculatedRole = 12;
+                        else if (CanEditFood && CanDeleteFood && !CanSendFood) calculatedRole = 13;
+                        else if (!CanEditFood && !CanDeleteFood && CanSendFood) calculatedRole = 14;
+                        else if (!CanEditFood && !CanDeleteFood && !CanSendFood) calculatedRole = 15;
+
+                        string query = string.Format("UPDATE dbo.Account SET Role = {0} WHERE UserName = N'{1}'", calculatedRole, UserName);
+                        DataProvider.Instance.ExecuteNonQuery(query);
+
+                        _messageService.ShowInfo("Thành công", string.Format("Đã áp đặt giới hạn tính năng cho Phục vụ: {0}", UserName));
+                        RefreshData(); // Tải lại bảng để cập nhật giao diện
+                    }
+                    catch (Exception ex)
+                    {
+                        _messageService.ShowError("Lỗi hệ thống", "Không thể cập nhật quyền phục vụ: " + ex.Message);
+                    }
+                },
+                (p) => SelectedItem != null && AccountType == 1 // Chỉ sáng nút khi đang chọn một tài khoản Phục vụ
+            );
+
+            // --- KHỞI TẠO COMMAND: ÁP ĐẶT QUYỀN CHO THU NGÂN ---
+            UpdateCashierPermissionCommand = new RelayCommand<object>(
+                (p) => {
+                    try
+                    {
+                        int calculatedRole = 2; // Mặc định đầy đủ quyền
+
+            
+                        // Cấm Thanh Toán (CanCheckout == false)
+                        // Cấm In (CanPrintDraft == false)
+
+                        if (!CanCheckout && !CanPrintDraft) calculatedRole = 23; // Cấm cả hai
+                        else if (!CanCheckout) calculatedRole = 21;              // Chỉ cấm Thanh toán
+                        else if (!CanPrintDraft) calculatedRole = 22;            // Chỉ cấm In
+                        else calculatedRole = 2;                                 // Đầy đủ quyền
+
+                        string query = string.Format("UPDATE dbo.Account SET Role = {0} WHERE UserName = N'{1}'", calculatedRole, UserName);
+                        DataProvider.Instance.ExecuteNonQuery(query);
+
+                        _messageService.ShowInfo("Thành công", string.Format("Đã áp đặt giới hạn cho Thu ngân: {0}", UserName));
+
+                        System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+                        RefreshData();
+                    }
+                    catch (Exception ex)
+                    {
+                        _messageService.ShowError("Lỗi hệ thống", "Không thể cập nhật quyền thu ngân: " + ex.Message);
+                    }
+                },
+                (p) => SelectedItem != null && AccountType == 2
+            );
         }
 
         private void RefreshData()
@@ -197,6 +373,10 @@ namespace RestaurantManagementSystem.ViewModels
             DisplayName = "";
             AccountType = -99;
             IsUserNameReadOnly = false;
+
+            IsFormatStaff = false;
+            IsFormatCashier = false;
+
             SelectedItem = null;
         }
 

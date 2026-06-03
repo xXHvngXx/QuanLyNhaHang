@@ -139,34 +139,58 @@ namespace RestaurantManagementSystem.ViewModels
                 p =>
                 {
                     if (SelectedTable == null || SelectedFood == null) return false;
+                    if (BillDetails != null && BillDetails.Any(row => Convert.ToInt32(row["Status"]) == 1)) return false;
 
-                    if (BillDetails != null && BillDetails.Any(row => Convert.ToInt32(row["Status"]) == 1))
-                        return false;
-
+                    // KIỂM TRA QUYỀN THÊM/SỬA MÓN
+                    if (AccountDAL.LoginAccount != null && Convert.ToInt32(AccountDAL.LoginAccount["Role"]) != 0)
+                    {
+                        if (!MainWindow.CanStaffEditFood) return false;
+                    }
                     return true;
                 }
             );
 
             UpdateFoodCommand = new RelayCommand<DataRowView>(
                 p => ExecuteUpdateFood(p),
-                p => p != null && !string.IsNullOrEmpty(Quantity)
+                p => {
+                    if (p == null || string.IsNullOrEmpty(Quantity)) return false;
+
+                    // KIỂM TRA QUYỀN SỬA MÓN
+                    if (AccountDAL.LoginAccount != null && Convert.ToInt32(AccountDAL.LoginAccount["Role"]) != 0)
+                    {
+                        if (!MainWindow.CanStaffEditFood) return false;
+                    }
+                    return true;
+                }
             );
 
             DeleteFoodCommand = new RelayCommand<DataRowView>(
                 p => ExecuteDeleteFood(p),
-                p => p != null
+                p => {
+                    // Nếu không có dòng nào được chọn thì không cho bấm
+                    if (p == null) return false;
+
+                    // Nếu không phải Admin (Role != 0) VÀ hệ thống đã khóa quyền xóa của Staff thì cấm bấm nút
+                    if (AccountDAL.LoginAccount != null && Convert.ToInt32(AccountDAL.LoginAccount["Role"]) != 0)
+                    {
+                        if (!MainWindow.CanStaffDeleteFood) return false;
+                    }
+                    return true;
+                }
             );
 
             ConfirmOrderCommand = new RelayCommand<object>(
                 p => ExecuteConfirmOrder(),
                 p =>
                 {
-                    if (SelectedTable == null || BillDetails == null || BillDetails.Count == 0)
-                        return false;
+                    if (SelectedTable == null || BillDetails == null || BillDetails.Count == 0) return false;
+                    if (BillDetails.Any(row => Convert.ToInt32(row["Status"]) == 1)) return false;
 
-                    if (BillDetails.Any(row => Convert.ToInt32(row["Status"]) == 1))
-                        return false;
-
+                    // KIỂM TRA QUYỀN GỬI ĐƠN
+                    if (AccountDAL.LoginAccount != null && Convert.ToInt32(AccountDAL.LoginAccount["Role"]) != 0)
+                    {
+                        if (!MainWindow.CanStaffSendFood) return false;
+                    }
                     return true;
                 }
             );
